@@ -6,7 +6,7 @@ Created on Mon Oct 18 15:28:15 2021
 """
 
 # data is currently fucked
-
+# maybe it's not.
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
@@ -20,13 +20,7 @@ from psd_processing import main as parameter_df
 
 import signal
 import matplotlib.pyplot as plt
-'''
-csv_path = './csv/'+str(now)+'/'
 
-project = '0010_dualiso_co2'
-psd_sorptives = 'o2h2'
-uptake_sorptive, temperature = 'co2', 291
-'''
 def make_source_path(project):
     source_path = "./source_data/"+project+"/"
     return source_path, project
@@ -47,15 +41,13 @@ def make_correlation_df(loading_df, param_df, data_dict,
         wmax = row['wmax']
         for d in data_dict:
             x.append(row['param_'+d])
-            #print(row['param_'+d])
         x = np.array(x)
-        #print(x)
         r_sq_at_width = np.array([])
         for index, row in loading_df.iterrows():
             p = row['pressure']
             y = []
             for d in data_dict:
-                y.append(row['loading_'+d])    
+                y.append(row['loading_'+d])
             y = np.array(y)
             slope, intercept, r_value, p_value, std_err = linregress(x, y)
             r_sq = r_value**2
@@ -63,7 +55,6 @@ def make_correlation_df(loading_df, param_df, data_dict,
             colvalues = [wmin, wmax, p, r_sq, slope, intercept]
             correlation_one_row = pd.DataFrame([colvalues],
                                                columns=colnames)
-            #print(correlation_one_row)
             if show_correlations == True:
                 f, ax = plt.subplots(nrows=1, ncols=1, 
                                      figsize=(8,8), dpi=96)
@@ -88,22 +79,7 @@ def make_correlation_df(loading_df, param_df, data_dict,
         correlation_df.to_csv(results_path+'correlation_df.csv')
     
     return correlation_df, n  
-'''
-def graph_correlations(correlation_df):
-    for index, row in correlation_df:
-        f, ax = plt.subplots(nrows=1, ncols=1, 
-                                     figsize=(8,8), dpi=96)
-        ax.scatter(x, y, ec='k', fc='none')
-        x_line = np.linspace(min(x), max(x), 100)
-        y_line = slope*x_line+intercept
-        ax.plot(x_line, y_line, color='k')
-        path_to_graphs = csv_path+'/graphs/'+str(wmin)+'-'+str(wmax)+'/'
-        if not os.path.exists(path_to_graphs):
-            os.makedirs(path_to_graphs)
-        f.savefig(path_to_graphs+'p'+str(p)+'_bar.png')
-        plt.close(f)
-        '''
-    
+
 def find_best_width_at_pressure(correlation_df, 
                                 to_csv=True, results_path=None, 
                                 graph=True, show_correlations=False):
@@ -115,13 +91,11 @@ def find_best_width_at_pressure(correlation_df,
         best = 0
         for r in rows:
             r_sq = correlation_df.loc[r, 'r_sq']
-            # print('r_sq: '+str(r_sq))
             m = correlation_df.loc[r, 'm']
             c = correlation_df.loc[r, 'c']
             if r_sq > best:
                 best = r_sq
                 wmin = correlation_df.loc[r, 'wmin']
-                # print('wmin: '+str(wmin))
                 wmax = correlation_df.loc[r, 'wmax']
                 best_m = m
                 best_c = c
@@ -186,17 +160,3 @@ def correlation_requirements(correlation_df,
                   ''')
                   
     return correlation_df
-
-'''
-loading_df = loading_df(project, uptake_sorptive, temperature, guess_models)
-param_df, data_dict = parameter_df(project, psd_sorptives,)
-results_path = make_results_path(project)
-correlation_df, n = make_correlation_df(loading_df, param_df, data_dict,
-                                        to_csv=True, results_path=results_path)
-correlation_df = correlation_requirements(correlation_df,
-                                          r_sq = 0.5,
-                                          #w_range = (5, 7)
-                                          )
-print(correlation_df)
-#bwap = find_best_width_at_pressure(correlation_df, results_path=results_path)
-'''
