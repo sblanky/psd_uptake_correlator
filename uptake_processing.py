@@ -311,17 +311,19 @@ if __name__ == '__main__':
                     guess_models, 
                     p_start=p_start, p_stop=p_stop
                     )
-    print(loadings)
-    print(f"{project}")
+    print("loading DataFrame Generated")
+
+    results_path = f"./results/{project}/{now}/"
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    loadings.to_csv(f"{results_path}loading_df.csv")
+    print(f"...and saved to {results_path}")
 
     report = report(project, sorptive, temperature, guess_models,  p_start, p_stop, 0.1)
-    report_path = f"./results/{project}/{now}/"
-    if not os.path.exists(report_path):
-        os.makedirs(report_path)
-    report_txt = open(f"{report_path}loading_report.txt", 'w')
+    report_txt = open(f"{results_path}loading_report.txt", 'w')
     report_txt.write(report)
     report_txt.close()
-
+    print(f"report saved in {results_path}")
 
     
 
