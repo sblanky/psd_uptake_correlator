@@ -22,11 +22,11 @@ import signal
 import matplotlib.pyplot as plt
 
 def make_source_path(project):
-    source_path = "./source_data/"+project+"/"
+    source_path = f"./source_data/{project}/"
     return source_path, project
 
 def make_results_path(project):
-    results_path = "./results/"+project+"/"+now+"/"
+    results_path = f"./results/{project}/{now}/"
     return results_path
 
 def make_correlation_df(loading_df, param_df, data_dict, 
@@ -62,10 +62,10 @@ def make_correlation_df(loading_df, param_df, data_dict,
                 x_line = np.linspace(min(x), max(x), 100)
                 y_line = slope*x_line+intercept
                 ax.plot(x_line, y_line, color='k')
-                path_to_graphs = csv_path+'/graphs/'+str(wmin)+'-'+str(wmax)+'/'
+                path_to_graphs = f"{csv_path}/graphs/{str(wmin)}-{str(wmax)}/"
                 if not os.path.exists(path_to_graphs):
                     os.makedirs(path_to_graphs)
-                f.savefig(path_to_graphs+'p'+str(p)+'_bar.png')
+                f.savefig(f"{path_to_graphs}p{str(p)}_bar.png"
                 plt.close(f)
             n+=1
             print(n)
@@ -76,7 +76,7 @@ def make_correlation_df(loading_df, param_df, data_dict,
     if to_csv == True:
         if not os.path.exists(results_path):
             os.makedirs(results_path)
-        correlation_df.to_csv(results_path+'correlation_df.csv')
+        correlation_df.to_csv(f"{results_path}correlation_df.csv")
     
     return correlation_df, n  
 
@@ -107,7 +107,7 @@ def find_best_width_at_pressure(correlation_df,
     if to_csv == True:
         if not os.path.exists(results_path):
             os.makedirs(results_path)
-        bwap.to_csv(results_path+'best_width_at_pressure.csv')
+        bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
         
     if graph == True:
         f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,8), dpi=96)
@@ -117,8 +117,7 @@ def find_best_width_at_pressure(correlation_df,
                 color='b', label='max')  
         ax.set_xlabel('Pressure / bar')
         ax.set_ylabel('Pore width / $\AA$')
-        f.savefig(results_path+'optimum_pore_size.png',
-                    dpi=200)
+        f.savefig(f"{results_path}optimum_pore_size.png", dpi=200)
         plt.close(f)
     
     return bwap
