@@ -219,7 +219,7 @@ def make_model_isotherm_dict(path, temperature,
         model_iso = pygaps.ModelIsotherm.from_pointisotherm(
                                         isotherm,                                                   
                                         branch='ads',
-                                        guess_model=guess_models,
+                                        model=guess_models,
                                         verbose=verbose
                                         )
         
@@ -294,13 +294,9 @@ def main(project, sorptive, temperature,
          guess_models, p_start=0.01, p_stop=10.00):
     path = make_path(project, sorptive)
     data_dict = make_model_isotherm_dict(path, temperature, 
-                                         guess_models, 
+                                         guess_models, adsorbate=sorptive, 
                                          p_start=p_start, p_stop=p_stop,
                                          clean_isos=True)
-    report = report(project, sorptive, temperature, guess_models,  p_start, p_stop, 0.1)
-    report_txt  = open(r'./results/{project}/{now}/loading_report.txt', 'w')
-    report_txt.write(report)
-    report_txt.close()
 
     return loading_df(data_dict)  
 
@@ -310,11 +306,23 @@ if __name__ == '__main__':
     sorptive = 'co2'
     temperature = 291 
     guess_models = ['DSLangmuir', 'TSLangmuir',]
+    p_start, p_stop = 0.01, 5.00
     loadings = main(project, sorptive, temperature,
-                    guess_models, p_start=0.01, p_stop=5.00
+                    guess_models, 
+                    p_start=p_start, p_stop=p_stop
                     )
     print(loadings)
-    
+    print(f"{project}")
+
+    report = report(project, sorptive, temperature, guess_models,  p_start, p_stop, 0.1)
+    report_path = f"./results/{project}/{now}/"
+    if not os.path.exists(report_path):
+        os.makedirs(report_path)
+    report_txt = open(f"{report_path}loading_report.txt", 'w')
+    report_txt.write(report)
+    report_txt.close()
+
+
     
 
     
