@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Oct 18 15:28:15 2021
-
-@author: pcxtsbl
+Correlates volume or surface area within all possible pore ranges to gas uptakes at 
+all pressures, in user-defined ranges.
 """
 
 # data is currently fucked
@@ -22,12 +21,14 @@ import signal
 import matplotlib.pyplot as plt
 
 def make_source_path(project):
-    source_path = f"./source_data/{project}/"
-    return source_path, project
+    """
+    """
+    return f"./source_data/{project}/"
 
 def make_results_path(project):
-    results_path = f"./results/{project}/{now}/"
-    return results_path
+    """
+    """
+    return f"./results/{project}/{now}/"
 
 def make_correlation_df(loading_df, param_df, data_dict, 
                         to_csv=False, results_path=None,
