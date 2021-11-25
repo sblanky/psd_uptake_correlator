@@ -32,7 +32,7 @@ def make_path(project, sorptive):
 
     """
     
-    return f"./source_data/{project}/{sorptive}\\"
+    return f"./source_data/{project}/uptake/{sorptive}/"
 
 def make_files_samples_df(path):
     """
@@ -48,10 +48,7 @@ def make_files_samples_df(path):
     Returns
     -------
     files_samples : dataframe
-        filepaths for all CO2 isotherms within path
-        names of samples
-
-    """
+	"""
     files = os.listdir(path)
     files_samples = pd.DataFrame(data=None)
     
@@ -190,7 +187,7 @@ def make_model_isotherm_dict(path, temperature,
     files_samples = make_files_samples_df(path)
     for i in files_samples.index:
         path_to_file = path+files_samples.file[i]
-        data = pd.read_excel(path_to_file)
+        data = pd.read_excel(path_to_file, engine='openpyxl')
         data['P'] = data['P'].multiply(0.001) # assume data in mbar, convert to bar
         if clean_isos == True: # remove any bad data
             data = pd.DataFrame(clean_isotherms(data))
@@ -208,9 +205,9 @@ def make_model_isotherm_dict(path, temperature,
             
             pressure_mode='absolute',       
             pressure_unit='bar',            
-            material_basis='mass',          
-            material_unit='g',            
-            loading_basis='molar',          
+            material_basis='mass',
+            material_unit='g',
+            loading_basis='molar',
             loading_unit='mmol',
             
             material = files_samples.loc[i, 'sample'],
@@ -268,6 +265,30 @@ def generate_loading_df(project, sorptive, temperature,
                                          clean_isos=True)
     return(loading_df(data_dict))
 
+def report(project, sorptive, temperature, guess_models,
+          p_start, p_stop, p_step):
+    """
+    Generates a report file for the current analysis.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    path = make_path(project, sorptive)
+
+    header = f"""
+                Loading DataFrame generated at {now_1.strftime('%H:%M')} on {now_1.strftime('%y-%m-%d')} 
+                ------------------------------------------------
+                """
+    body = f"""
+                Project name = {project}, Sorptive = {sorptive}, T = {temperature} K
+                Models used = {guess_models}, Number of isotherms = {len(os.listdir(path))}
+                Pressure range = {p_start} - {p_stop} bar, with increment {p_step}
+                """
+    report = f"{header}{body}"
+    return report
 
 def main(project, sorptive, temperature,
          guess_models, p_start=0.01, p_stop=10.00):
@@ -276,6 +297,11 @@ def main(project, sorptive, temperature,
                                          guess_models, 
                                          p_start=p_start, p_stop=p_stop,
                                          clean_isos=True)
+    report = report(project, sorptive, temperature, guess_models,  p_start, p_stop, 0.1)
+    report_txt  = open(r'./results/{project}/{now}/loading_report.txt', 'w')
+    report_txt.write(report)
+    report_txt.close()
+
     return loading_df(data_dict)  
 
 if __name__ == '__main__':
