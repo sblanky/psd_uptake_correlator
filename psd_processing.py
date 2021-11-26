@@ -10,6 +10,9 @@ import numpy as np
 import math as m
 import glob, re, os
 
+import datetime
+now_1 = datetime.datetime.now()
+now = now_1.strftime('%y%m%d%H%M')
 
 def make_path(project, sorptives):
     """
@@ -243,6 +246,37 @@ def parameter_df(data_dict,
             param_df.to_csv(f"{csv_path}param_df.csv")
     
     return param_df
+
+
+def report(project, sorptives, wstart, wstop, wstep, parameter):
+    """
+    Generates a report file for the current analysis.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    if parameter == 'S':
+        parameter_name = 'surface area' 
+    elif parameter == 'V':
+        parameter_name = 'pore volume'
+
+    path = make_path(project, sorptives)
+    angstrom = u'\u212B'
+    header = f"""
+                Parameter DataFrame generated at {now_1.strftime('%H:%M')} on {now_1.strftime('%y-%m-%d')} 
+                ------------------------------------------------
+                """
+    body = f"""
+                Project name = {project}, Sorptives = {sorptives},
+                Number of PSDs = {len(os.listdir(path))}, calculated for {parameter_name}.
+                Using pore widths between {wstart} and {wstop} {angstrom} with a minimum increment
+                of {wstep} {angstrom}
+                """
+    report = f"{header}{body}"
+    return report
 
 def main(project, sorptives, wstart=3, wstop=500, wstep=1):
     path = make_path(project, sorptives)
