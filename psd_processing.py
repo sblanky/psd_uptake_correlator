@@ -278,11 +278,28 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
     report = f"{header}{body}"
     return report
 
-def main(project, sorptives, wstart=3, wstop=500, wstep=1):
+def main(project, sorptives, wstart=3, wstop=20, wstep=1):
     path = make_path(project, sorptives)
+    print("starting determination of parameters from {path}")
+    print(f"Creating dictionary of  PSDs for {len(os.listdir(path))} samples...")
+    print("...done")
     data_dict = data_collect(path)
+    print(f"""Creating parameter DataFrame for for pore width ranges from {wstart} to {wstop}, increment = {wstep} angstroms...""")
     param_df = parameter_df(data_dict, 
                             wstart=wstart, wstop=wstop, wstep=wstep)
+    print("...done")
+    
+    results_path = f"./results/{project}/{now}/"
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    param_df.to_csv(f"{results_path}param_df.csv")
+    print(f"...and saved to {results_path}")
+
+    Report = report(project, sorptives, wstart, wstop, wstep, 'V')
+    report_txt = open(f"{results_path}loading_report.txt", 'w')
+    report_txt.write(Report)
+    report_txt.close()
+    print(f"report saved in {results_path}")
     return param_df, data_dict
 
 if __name__ == '__main__':
@@ -290,6 +307,5 @@ if __name__ == '__main__':
     project = '0010_dualiso_co2'
     sorptives = 'n2h2'
     param_df, data_dict = main(project, sorptives)
-    print(param_df)
 
  
