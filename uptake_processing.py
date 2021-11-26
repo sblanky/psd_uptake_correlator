@@ -209,7 +209,8 @@ def make_model_isotherm_dict(path, temperature,
             material_unit='g',
             loading_basis='molar',
             loading_unit='mmol',
-            
+            temperature_unit='K',
+
             material = files_samples.loc[i, 'sample'],
             adsorbate = adsorbate,
             temperature = temperature,
@@ -307,11 +308,19 @@ if __name__ == '__main__':
     temperature = 291 
     guess_models = ['DSLangmuir', 'TSLangmuir',]
     p_start, p_stop = 0.01, 5.00
+    print(f"""Generating loading DataFrame 
+          Project = {project}
+          Sorptive = {sorptive}
+          Temperature = {temperature} K
+          Models used = {guess_models}
+          ...
+          """
+         )
     loadings = main(project, sorptive, temperature,
                     guess_models, 
                     p_start=p_start, p_stop=p_stop
                     )
-    print("loading DataFrame Generated")
+    print("...done")
 
     results_path = f"./results/{project}/{now}/"
     if not os.path.exists(results_path):
