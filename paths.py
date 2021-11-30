@@ -5,15 +5,20 @@ paths to source data. Will add more functionality later.
 
 import os
 
-def make_path(project, sorptives, application):
+def make_path(source_result, project, sorptives, application):
     """
-    Finds the path to your source data. Used in psd_processing and uptake_processing.
+    Finds the path to your source data, or makes path to in which to save
+    results. Used in psd_processing and uptake_processing. Will implement in
+    best_width_at_pressure at a later stage.
     Source data should be located in ./source_data/project/application/sorptive(s)
     Will throw ValueError if project or sorptives not found, or if application
     is not either uptake or psd.
 
     Parameters
     ----------
+    source_result : string
+        Whether taking source data or generating results. Must be 'source' or
+        'result' otherwise ValueError thrown.
     project : string
         Name of your project, usually in the form ####_*, i.e. four numbers and then some alphanumeric description.
     sorptives : string
@@ -25,15 +30,23 @@ def make_path(project, sorptives, application):
     path : string
         path to your source data.
 	"""
-    applications = ['uptake', 'psd']
-    if application not in applications:
-        raise ValueError(f"Application variable must be either \'uptake\' or \'psd\'. You have input {application}.")
+    if source_result not in ['source', 'result']: 
+        raise ValueError("Variable source_result must be either source or result")
 
-    if project not in os.listdir("./source_data/"):
-        raise ValueError(f"{project} is an invalid project, please check project file exists in source_data")
-        
-
-    if sorptives not in os.listdir(f"./source_data/{project}/{application}/"):
-        raise ValueError(f"{sorptives} could not be found. Check that the directory {sorptives} exists in the {application} folder in {project}.")
+    elif source_result == 'result':
+        if project is None:
+            raise ValueError("Must have project name to generate results directory")
+        else:
+            return f"./results/{project}"
     
-    return f"source_data/{project}/{application}/{sorptives}/"
+    elif source_result == 'source':
+        if application not in ['uptake', 'psd']:
+            raise ValueError(f"Application variable must be either \'uptake\' or \'psd\'. You have input {application}.")
+
+        if project not in os.listdir("./source_data/"):
+            raise ValueError(f"{project} is an invalid project, please check project file exists in source_data")
+
+        if sorptives not in os.listdir(f"./source_data/{project}/{application}/"):
+            raise ValueError(f"{sorptives} could not be found. Check that the directory {sorptives} exists in the {application} folder in {project}.")
+        
+        return f"source_data/{project}/{application}/{sorptives}/"
