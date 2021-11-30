@@ -9,30 +9,11 @@ import pandas as pd
 import numpy as np
 import math as m
 import glob, re, os
+from paths import make_path
 
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
-
-def make_path(project, sorptives):
-    """
-    Gets path for finding PSD files based on project and sorptive.
-
-    Parameters
-    ----------
-    project : string
-        Current project.
-    sorptives : string
-        Sorptives used to determine psd, e.g. 'n2', 'n2h2' etc.
-
-    Returns
-    -------
-    path : string
-        Location of PSD files.
-
-    """
-    return f"./source_data/{project}/psd/{sorptives}/"
-
 
 def get_sample_name(file, path):
     """
@@ -268,7 +249,7 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
     elif parameter == 'V':
         parameter_name = 'pore volume'
 
-    path = make_path(project, sorptives)
+    path = make_path(project, sorptives, 'psd')
     angstrom = u'\u212B'
     header = f"""
                 Parameter DataFrame generated at {now_1.strftime('%H:%M')} on {now_1.strftime('%y-%m-%d')} 
@@ -284,7 +265,7 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
     return report
 
 def main(project, sorptives, wstart=3, wstop=20, wstep=1):
-    path = make_path(project, sorptives)
+    path = make_path(project, sorptives, 'psd')
     print(f"starting determination of parameters from {path}")
     print(f"Creating dictionary of  PSDs for {len(os.listdir(path))} samples...")
     print("...done")

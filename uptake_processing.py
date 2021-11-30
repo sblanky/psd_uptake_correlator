@@ -5,34 +5,13 @@ model isotherms from a set of experimental isotherm (using pygaps), then
 generate point isotherms from these isotherms with identical pressure points.
 """
 
-import pygaps
+import pygaps, os
 import pandas as pd
 import numpy as np
-import os
-
+from paths import make_path
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
-
-def make_path(project, sorptive):
-    """
-    Generates path to uptake isotherms based on the project and sorptives.
-
-    Parameters
-    ----------
-    project : string
-        Which project to work on.
-    sorptive : string
-        Which uptake sorptive to use.
-
-    Returns
-    -------
-    path : string
-        Location of uptake isotherms.
-
-    """
-    
-    return f"./source_data/{project}/uptake/{sorptive}/"
 
 def make_files_samples_df(path):
     """
@@ -277,7 +256,7 @@ def report(project, sorptive, temperature, guess_models,
     Returns
     -------
     """
-    path = make_path(project, sorptive)
+    path = make_path(project, sorptive, 'uptake')
 
     header = f"""
                 Loading DataFrame generated at {now_1.strftime('%H:%M')} on {now_1.strftime('%y-%m-%d')} 
@@ -293,7 +272,7 @@ def report(project, sorptive, temperature, guess_models,
 
 def main(project, sorptive, temperature,
          guess_models, p_start=0.01, p_stop=10.00):
-    path = make_path(project, sorptive)
+    path = make_path(project, sorptive, 'uptake')
     data_dict = make_model_isotherm_dict(path, temperature, 
                                          guess_models, adsorbate=sorptive, 
                                          p_start=p_start, p_stop=p_stop,
