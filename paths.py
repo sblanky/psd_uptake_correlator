@@ -1,3 +1,8 @@
+"""
+For generating some strings for other modules. Currently only makes
+paths to source data. Will add more functionality later.
+"""
+
 import os
 
 def make_path(project, sorptives, application):
