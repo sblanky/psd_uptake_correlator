@@ -110,7 +110,12 @@ def data_collect(path):
         Dictionary of PSD data for all samples.
 
     """
-    files = glob.glob(path+'*.csv')
+    all_files = os.listdir(path)
+    files = []
+    for a in all_files:
+        if re.search(re.escape(".csv"), a, flags=re.IGNORECASE):
+            files.append(a)
+
     sample_names = []
     for file in files:
         sample_name = get_sample_name(file, path)
@@ -280,15 +285,17 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
 
 def main(project, sorptives, wstart=3, wstop=20, wstep=1):
     path = make_path(project, sorptives)
-    print("starting determination of parameters from {path}")
+    print(f"starting determination of parameters from {path}")
     print(f"Creating dictionary of  PSDs for {len(os.listdir(path))} samples...")
     print("...done")
     data_dict = data_collect(path)
+
     print(f"""Creating parameter DataFrame for for pore width ranges from {wstart} to {wstop}, increment = {wstep} angstroms...""")
-    param_df = parameter_df(data_dict, 
+    param_df = parameter_df(data_dict,
                             wstart=wstart, wstop=wstop, wstep=wstep)
     print("...done")
-    
+   
+
     results_path = f"./results/{project}/{now}/"
     if not os.path.exists(results_path):
         os.makedirs(results_path)
@@ -308,4 +315,3 @@ if __name__ == '__main__':
     sorptives = 'n2h2'
     param_df, data_dict = main(project, sorptives)
 
- 
