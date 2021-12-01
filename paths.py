@@ -5,7 +5,7 @@ paths to source data. Will add more functionality later.
 
 import os
 
-def make_path(source_result, project, sorptives, application):
+def make_path(source_result, project, sorptives, application=None):
     """
     Finds the path to your source data, or makes path to in which to save
     results. Used in psd_processing and uptake_processing. Will implement in
@@ -24,7 +24,8 @@ def make_path(source_result, project, sorptives, application):
     sorptives : string
         The name of the sorptive(s) you want to use the data from. 
     application : string
-        Either uptake or psd.
+        Either uptake or psd (if source_result=source), or don't use (=None).
+        Default is None..
     Returns
     -------
     path : string

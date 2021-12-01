@@ -91,6 +91,7 @@ def data_collect(path):
         Dictionary of PSD data for all samples.
 
     """
+    print(f"starting determination of parameters from {path}")
     all_files = os.listdir(path)
     files = []
     for a in all_files:
@@ -103,6 +104,7 @@ def data_collect(path):
         if sample_name not in sample_names:
             sample_names.append(sample_name)
     data_dict = make_data_dict(sample_names, path)
+    print("...done")
     return data_dict
 
 def find_parameter(sample_df, measure, 
@@ -189,6 +191,7 @@ def parameter_df(data_dict,
         intervals.
 
     """
+    print(f"""Creating parameter DataFrame for for pore width ranges from {wstart} to {wstop}, increment = {wstep} angstroms...""")
     param_cols = ['wmax', 'wmin']
     for d in data_dict:
         param_cols.append(f"param_{d}")
@@ -230,7 +233,7 @@ def parameter_df(data_dict,
             if not os.path.exists(csv_path):
                 os.makedirs(csv_path)
             param_df.to_csv(f"{csv_path}param_df.csv")
-    
+    print("...done") 
     return param_df
 
 
@@ -266,28 +269,21 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
 
 def main(project, sorptives, wstart=3, wstop=20, wstep=1):
     path = make_path('source', project, sorptives, 'psd')
-    print(f"starting determination of parameters from {path}")
-    print(f"Creating dictionary of  PSDs for {len(os.listdir(path))} samples...")
-    print("...done")
     data_dict = data_collect(path)
 
-    print(f"""Creating parameter DataFrame for for pore width ranges from {wstart} to {wstop}, increment = {wstep} angstroms...""")
     param_df = parameter_df(data_dict,
                             wstart=wstart, wstop=wstop, wstep=wstep)
-    print("...done")
-   
 
-    results_path = f"./results/{project}/{now}/"
+    results_path = make_path('result', project, sorptives, 'psd')
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     param_df.to_csv(f"{results_path}param_df.csv")
-    print(f"...and saved to {results_path}")
 
     Report = report(project, sorptives, wstart, wstop, wstep, 'V')
-    report_txt = open(f"{results_path}loading_report.txt", 'w')
+    report_txt = open(f"{results_path}psd_report.txt", 'w')
     report_txt.write(Report)
     report_txt.close()
-    print(f"report saved in {results_path}")
+    print(f"Parameter dataframe and report saved in {esults_path}")
     return param_df, data_dict
 
 if __name__ == '__main__':
