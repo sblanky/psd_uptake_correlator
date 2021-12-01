@@ -234,7 +234,7 @@ def loading_df(data_dict):
 def generate_loading_df(project, sorptive, temperature,
                         guess_models, p_start=0.01, p_stop=10.00, p_step=1,
                         clean_isos=True):
-    path = make_path(project, sorptive)
+    path = make_path('source', project, sorptive, 'uptake')
     data_dict = make_model_isotherm_dict(path, temperature, 
                                          project=None, adsorbate=None, 
                                          guess_models=['TSLangmuir', 
@@ -256,7 +256,7 @@ def report(project, sorptive, temperature, guess_models,
     Returns
     -------
     """
-    path = make_path(project, sorptive, 'uptake')
+    path = make_path('source', project, sorptive, 'uptake')
 
     header = f"""
                 Loading DataFrame generated at {now_1.strftime('%H:%M')} on {now_1.strftime('%y-%m-%d')} 
@@ -272,7 +272,7 @@ def report(project, sorptive, temperature, guess_models,
 
 def main(project, sorptive, temperature,
          guess_models, p_start=0.01, p_stop=10.00):
-    path = make_path(project, sorptive, 'uptake')
+    path = make_path('source', project, sorptive, 'uptake')
     data_dict = make_model_isotherm_dict(path, temperature, 
                                          guess_models, adsorbate=sorptive, 
                                          p_start=p_start, p_stop=p_stop,

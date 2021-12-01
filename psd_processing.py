@@ -249,7 +249,7 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
     elif parameter == 'V':
         parameter_name = 'pore volume'
 
-    path = make_path(project, sorptives, 'psd')
+    path = make_path('source', project, sorptives, 'psd')
     angstrom = u'\u212B'
     header = f"""
                 Parameter DataFrame generated at {now_1.strftime('%H:%M')} on {now_1.strftime('%y-%m-%d')} 
@@ -265,7 +265,7 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
     return report
 
 def main(project, sorptives, wstart=3, wstop=20, wstep=1):
-    path = make_path(project, sorptives, 'psd')
+    path = make_path('source', project, sorptives, 'psd')
     print(f"starting determination of parameters from {path}")
     print(f"Creating dictionary of  PSDs for {len(os.listdir(path))} samples...")
     print("...done")

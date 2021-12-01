@@ -1,38 +1,26 @@
-# -*- coding: utf-8 -*-
 """
-Correlates volume or surface area within all possible pore ranges to gas uptakes at 
-all pressures, in user-defined ranges.
+Corrleates volumes or surface area within all possible pore ranges to gas
+uptakes at all pressures, in user-defined ranges.
 """
 
-# data is currently fucked
-# maybe it's not.
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
-import os
+import os, signal
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 
+from paths import make_path
 from uptake_processing import main as loading_df
 from psd_processing import main as parameter_df
 
-import signal
 import matplotlib.pyplot as plt
-
-def make_source_path(project):
-    """
-    """
-    return f"./source_data/{project}/"
-
-def make_results_path(project):
-    """
-    """
-    return f"./results/{project}/{now}/"
 
 def make_correlation_df(loading_df, param_df, data_dict, 
                         to_csv=False, results_path=None,
                         show_correlations=False):
+
     colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c']
     correlation_df = pd.DataFrame(columns = colnames)
     n=0
