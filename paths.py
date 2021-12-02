@@ -4,6 +4,8 @@ paths to source data. Will add more functionality later.
 """
 
 import os
+from pathlib import Path
+import pandas as pd
 
 def make_path(source_result, project, sorptives, application=None):
     """
@@ -25,7 +27,8 @@ def make_path(source_result, project, sorptives, application=None):
         The name of the sorptive(s) you want to use the data from. 
     application : string
         Either uptake or psd (if source_result=source), or don't use (=None).
-        Default is None..
+        Default is None.
+                d = pd.DataFrame(d)
     Returns
     -------
     path : string
@@ -38,7 +41,7 @@ def make_path(source_result, project, sorptives, application=None):
         if project is None:
             raise ValueError("Must have project name to generate results directory")
         else:
-            return f"./results/{project}"
+            return f"./results/{project}/"
     
     elif source_result == 'source':
         if application not in ['uptake', 'psd']:
@@ -51,3 +54,16 @@ def make_path(source_result, project, sorptives, application=None):
             raise ValueError(f"{sorptives} could not be found. Check that the directory {sorptives} exists in the {application} folder in {project}.")
         
         return f"source_data/{project}/{application}/{sorptives}/"
+
+def read_data(path):
+    file_path = Path(f"{path}")
+    file_extension = file_path.suffix.lower()[1:]
+    if file_extension == 'xlsx':
+        return pd.read_excel(file_path, engine='openpyxl')
+    elif file_extension == 'xls':
+        return pd.read_excel(file_path)
+    elif file_extension == 'csv':
+        return pd.read_csv(file_path)
+    else:
+        raise Exception("File not supported")
+
