@@ -5,13 +5,12 @@ model isotherms from a set of experimental isotherm (using pygaps), then
 generate point isotherms from these isotherms with identical pressure points.
 """
 
-import pygaps, os
+import pygaps, os, numbers
 import pandas as pd
 import numpy as np
-from paths import make_path
+from pathlib import Path
+from paths import make_path, read_data 
 import datetime
-now_1 = datetime.datetime.now()
-now = now_1.strftime('%y%m%d%H%M')
 
 def make_files_samples_df(path):
     """
@@ -52,12 +51,12 @@ def make_files_samples_df(path):
     
     return files_samples   
 
-def clean_isotherms(data,
-                    increasing=True, positive=True,
-                    isna=True):
+def clean_isotherms(data, 
+                   positive = True, increasing = True):
     """
-    Removes any bad datapoints from isotherm; i.e. decreasing pressures,
-    negative pressures/loadings, and any NaN values.
+    Removes any bad datapoints from isotherm; automatically removes non-numeric
+    and NaN. Options for removing decreasing pressures,
+    negative pressures/loadings.
 
     Parameters
     ----------
@@ -70,9 +69,6 @@ def clean_isotherms(data,
     positive : boolean, optional
         If True, only positive pressures and loadings will be included. 
         The default is True.
-    isna : boolean, optional
-        If true, NaN will be removed. 
-        The default is True.
 
     Returns
     -------
@@ -80,11 +76,22 @@ def clean_isotherms(data,
         Cleaned isotherm.
 
     """
-    
-    to_drop = [] # will be filled with rows to remove
-    for index, row in data.iterrows(): # check rows for bad values
+    data.columns = ['P', 'Conc.'] # so we can work with later
+    # drop all non numeric and NaN
+    data = data.dropna()
+    data = (data
+            .drop(data.columns, axis=1)
+            .join(data[data.columns]
+                  .apply(pd.to_numeric, errors='coerce')))
+    data = data[data[data.columns]
+                .notnull().all(axis=1)]
+    data.reset_index(drop=True, inplace=True) # otherwise row comparison breaks
+
+    # make list of negative/decreasing values.
+    to_drop = [] 
+    for index, row in data.iterrows():
         P = data.loc[index, 'P']
-        Conc = data.loc[index, 'P']
+        Conc = data.loc[index, 'Conc.']
         if increasing == True: 
             if index > 0:
                 previous_index = index-1
@@ -95,11 +102,7 @@ def clean_isotherms(data,
         if positive == True:
             if P < 0 or Conc < 0:
                 to_drop.append(index)
-        if isna == True:
-            if pd.isna(P) or pd.isna(Conc):
-                to_drop.append(index)
-   
-    
+
     to_drop = list(set(to_drop)) # make sure rows are unique.
     for t in to_drop: # drop all bad rows.
         data.drop(labels=t, axis=0, inplace=True)
@@ -165,9 +168,21 @@ def make_model_isotherm_dict(path, temperature,
     
     files_samples = make_files_samples_df(path)
     for i in files_samples.index:
-        path_to_file = path+files_samples.file[i]
-        data = pd.read_excel(path_to_file, engine='openpyxl')
-        data['P'] = data['P'].multiply(0.001) # assume data in mbar, convert to bar
+        data = read_data(f"{path}{files_samples.file[i]}")
+        """
+        file_path = Path(f"{path}{files_samples.file[i]}")
+        file_extension = file_path.suffix.lower()[1:]
+        if file_extension == 'xlsx':
+            data = pd.read_excel(file_path, engine='openpyxl')
+        elif file_extension == 'xls':
+            data = pd.read_excel(file_path.read())
+        elif file_extension == 'csv':
+            data = pd.read_csv(file_path.read())
+        else:
+            raise Exception("File not supported")
+        """
+
+        # data = pd.read_excel(path_to_file, engine='openpyxl')
         if clean_isos == True: # remove any bad data
             data = pd.DataFrame(clean_isotherms(data))
         if cut_data is not None:
@@ -176,7 +191,8 @@ def make_model_isotherm_dict(path, temperature,
             else:
                 print('invalid value for cut_data, please input a pressure')
                 continue
-        
+         
+        data['P'] = data['P'].multiply(0.001) # assume data in mbar, convert to bar
         isotherm = pygaps.PointIsotherm( # reading in data as point isotherm
             isotherm_data=data,
             pressure_key='P',
@@ -229,23 +245,10 @@ def loading_df(data_dict):
         colname = 'loading_'+d
         loading_df[colname] = data_dict[d].loading  
     loading_df = loading_df.dropna()
+    print("...done")
     return loading_df
     
-def generate_loading_df(project, sorptive, temperature,
-                        guess_models, p_start=0.01, p_stop=10.00, p_step=1,
-                        clean_isos=True):
-    path = make_path('source', project, sorptive, 'uptake')
-    data_dict = make_model_isotherm_dict(path, temperature, 
-                                         project=None, adsorbate=None, 
-                                         guess_models=['TSLangmuir', 
-                                                      'DSLangmuir'],
-                                         p_start=0.01, p_stop=20.00,
-                                         cut_data=None,
-                                         write_csv=False, verbose=False,
-                                         clean_isos=True)
-    return(loading_df(data_dict))
-
-def report(project, sorptive, temperature, guess_models,
+def make_report(project, sorptive, temperature, guess_models,
           p_start, p_stop, p_step):
     """
     Generates a report file for the current analysis.
@@ -257,9 +260,9 @@ def report(project, sorptive, temperature, guess_models,
     -------
     """
     path = make_path('source', project, sorptive, 'uptake')
-
+    date_time = datetime.datetime.now().strftime('%H:%M on %y-%m-%d')
     header = f"""
-                Loading DataFrame generated at {now_1.strftime('%H:%M')} on {now_1.strftime('%y-%m-%d')} 
+                Loading DataFrame generated at {date_time}
                 ------------------------------------------------
                 """
     body = f"""
@@ -270,23 +273,15 @@ def report(project, sorptive, temperature, guess_models,
     report = f"{header}{body}"
     return report
 
-def main(project, sorptive, temperature,
-         guess_models, p_start=0.01, p_stop=10.00):
+def process_uptake(project, sorptive, temperature, now,
+                    guess_models, p_start=0.01, p_stop=10.00, p_step=0.01):
     path = make_path('source', project, sorptive, 'uptake')
-    data_dict = make_model_isotherm_dict(path, temperature, 
+    data = make_model_isotherm_dict(path, temperature, 
                                          guess_models, adsorbate=sorptive, 
                                          p_start=p_start, p_stop=p_stop,
                                          clean_isos=True)
-
-    return loading_df(data_dict)  
-
-if __name__ == '__main__':
-    # for testing
-    project = '0010_dualiso_co2'
-    sorptive = 'co2'
-    temperature = 291 
-    guess_models = ['DSLangmuir', 'TSLangmuir',]
-    p_start, p_stop = 0.01, 5.00
+    results_path = f"{make_path('result', project, sorptive)}{now}/"
+    
     print(f"""Generating loading DataFrame 
           Project = {project}
           Sorptive = {sorptive}
@@ -295,25 +290,51 @@ if __name__ == '__main__':
           ...
           """
          )
+    loadings = loading_df(data)
+    
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    loadings.to_csv(f"{results_path}loading_df.csv")
+
+    report = make_report(project, sorptive, temperature, guess_models,
+                         p_start, p_stop, p_step)
+    report_txt = open(f"{results_path}loading_report.txt", 'w')
+    report_txt.write(report)
+    report_txt.close()
+    return loadings 
+
+def main(project, sorptive, temperature,
+         guess_models, p_start=0.01, p_stop=10.00):
+    now_1 = datetime.datetime.now()
+    now = now_1.strftime('%y%m%d%H%M')
+    path = make_path('source', project, sorptive, 'uptake')
+    data_dict = make_model_isotherm_dict(path, temperature, 
+                                         guess_models, adsorbate=sorptive, 
+                                         p_start=p_start, p_stop=p_stop,
+                                         clean_isos=True)
+    loadings = loading_df(data_dict)
+    results_path = f"{make_path('result', project, sorptive)}{now}/"
+    print(results_path)
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    loadings.to_csv(f"{results_path}loading_df.csv")
+
+    report = make_report(project, sorptive, temperature, guess_models,  p_start, p_stop, 0.1)
+    report_txt = open(f"{results_path}loading_report.txt", 'w')
+    report_txt.write(report)
+    report_txt.close()
+    return loadings
+
+if __name__ == '__main__':
+    # for testing
+    
+    project = '0010_dualiso_co2'
+    sorptive = 'co2'
+    temperature = 291 
+    guess_models = ['DSLangmuir', 'TSLangmuir',]
+    p_start, p_stop = 0.01, 5.00
     loadings = main(project, sorptive, temperature,
                     guess_models, 
                     p_start=p_start, p_stop=p_stop
                     )
-    print("...done")
 
-    results_path = f"./results/{project}/{now}/"
-    if not os.path.exists(results_path):
-        os.makedirs(results_path)
-    loadings.to_csv(f"{results_path}loading_df.csv")
-    print(f"...and saved to {results_path}")
-
-    report = report(project, sorptive, temperature, guess_models,  p_start, p_stop, 0.1)
-    report_txt = open(f"{results_path}loading_report.txt", 'w')
-    report_txt.write(report)
-    report_txt.close()
-    print(f"report saved in {results_path}")
-
-    
-
-    
-    
