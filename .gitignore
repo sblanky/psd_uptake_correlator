@@ -1,0 +1,15 @@
+testing.py
+report.txt
+source_data/
+results/
+__pycache__/
+test_clean.py
+thria_co2.py
+
+# vim temporary files
+[._]*.sw[a-z]
+[._]sw[a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
