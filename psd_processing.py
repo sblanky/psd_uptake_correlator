@@ -237,7 +237,7 @@ def parameter_df(data_dict,
     return param_df
 
 
-def report(project, sorptives, wstart, wstop, wstep, parameter):
+def make_report(project, sorptives, wstart, wstop, wstep, parameter):
     """
     Generates a report file for the current analysis.
 
@@ -266,6 +266,29 @@ def report(project, sorptives, wstart, wstop, wstep, parameter):
                 """
     report = f"{header}{body}"
     return report
+
+def process_psd(project, sorptives, parameter, now,
+                wstart=3, wstop=20, wstep=1):
+    path = make_path('source', project, sorptives, 'psd')
+    data_dict = data_collect(path)
+    param_df = parameter_df(data_dict,
+                            wstart=wstart,
+                            wstop=wstop, wstep=wstep)
+    results_path = f"{make_path('result', project, sorptives, 'psd')}/{now}/"
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    param_df.to_csv(f"{results_path}param_df.csv")
+
+    report = make_report(project,
+                         sorptives,
+                         wstart, wstop,
+                         wstep,
+                         parameter) 
+    report_txt = open(f"{results_path}psd_report.txt",'w')
+    report_txt.write(report)
+    report_txt.close()
+    print(f"Parameter dataframe and report saved in {results_path}")
+    return param_df, data_dict
 
 def main(project, sorptives, wstart=3, wstop=20, wstep=1):
     path = make_path('source', project, sorptives, 'psd')
