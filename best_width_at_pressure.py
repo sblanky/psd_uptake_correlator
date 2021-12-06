@@ -110,19 +110,19 @@ def find_best_width_at_pressure(correlation_df,
         if not os.path.exists(results_path):
             os.makedirs(results_path)
         bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
-        
-    if graph == True:
-        f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,8), dpi=96)
-        ax.plot(bwap.p, bwap.wmin,
-                color='b', label='min')
-        ax.plot(bwap.p, bwap.wmax,
-                color='b', label='max')  
-        ax.set_xlabel('Pressure / bar')
-        ax.set_ylabel('Pore width / $\AA$')
-        f.savefig(f"{results_path}optimum_pore_size.png", dpi=200)
-        plt.close(f)
-    
+
     return bwap
+
+def graph_bwap(bwap, results_path):
+    f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,8), dpi=96)
+    ax.plot(bwap.p, bwap.wmin,
+            color='b', label='min')
+    ax.plot(bwap.p, bwap.wmax,
+            color='b', label='max')  
+    ax.set_xlabel('Pressure / bar')
+    ax.set_ylabel('Pore width / $\AA$')
+    f.savefig(f"{results_path}optimum_pore_size.png", dpi=200)
+    plt.close(f)
 
 def correlation_requirements(correlation_df, 
                              positive_slope=True,
