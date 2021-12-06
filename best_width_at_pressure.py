@@ -6,24 +6,30 @@ uptakes at all pressures, in user-defined ranges.
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
-import os, signal
+import os, sys, signal
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
-
 from paths import make_path
-from uptake_processing import main as loading_df
-from psd_processing import main as parameter_df
 
 import matplotlib.pyplot as plt
 
-def make_correlation_df(loading_df, param_df, data_dict, 
+def print_progress_bar(i, maximum, post_text):
+    n_bar=20 
+    j = i/maximum
+    sys.stdout.write('\r')
+    sys.stdout.write(f"[{'#' * int(n_bar * j):{n_bar}s}] {int(100 * j)}% {post_text}")
+    sys.stdout.flush()
+
+def make_correlation_df(loading_df, param_df, data_dict, now,
                         to_csv=False, results_path=None,
                         show_correlations=False):
 
     colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c']
     correlation_df = pd.DataFrame(columns = colnames)
     n=0
+    df_size = len(param_df) * len(loading_df)
+    print(f"Calculating porosity-loading correlations. {df_size} correlations to perform")
     for index, row in param_df.iterrows():
         x = []
         wmin = row['wmin']
@@ -44,6 +50,7 @@ def make_correlation_df(loading_df, param_df, data_dict,
             colvalues = [wmin, wmax, p, r_sq, slope, intercept]
             correlation_one_row = pd.DataFrame([colvalues],
                                                columns=colnames)
+            """ this needs fixing
             if show_correlations == True:
                 f, ax = plt.subplots(nrows=1, ncols=1, 
                                      figsize=(8,8), dpi=96)
@@ -54,19 +61,25 @@ def make_correlation_df(loading_df, param_df, data_dict,
                 path_to_graphs = f"{csv_path}/graphs/{str(wmin)}-{str(wmax)}/"
                 if not os.path.exists(path_to_graphs):
                     os.makedirs(path_to_graphs)
-                f.savefig(f"{path_to_graphs}p{str(p)}_bar.png"
+                f.savefig(f"{path_to_graphs}p{str(p)}_bar.png")
                 plt.close(f)
+                """
             n+=1
-            print(n)
+            # print(n)
             correlation_df = correlation_df.append(correlation_one_row,
                                                    ignore_index=True)
+            print_progress_bar(n, df_size, '')
+
     correlation_df = correlation_df[correlation_df.p != 0.0]
-    
+    print(f"\ncorrelation_df finished!")
+    """ fix this 
     if to_csv == True:
-        if not os.path.exists(results_path):
-            os.makedirs(results_path)
-        correlation_df.to_csv(f"{results_path}correlation_df.csv")
-    
+        results_path = f"{make_path('result', project, sorptives, 'psd')}/{now}/"
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    param_df.to_csv(f"{results_path}param_df.csv")
+print(correlation_df)
+    """ 
     return correlation_df, n  
 
 def find_best_width_at_pressure(correlation_df, 
