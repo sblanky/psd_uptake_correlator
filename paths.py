@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import pandas as pd
 
-def make_path(source_result, project, sorptives, application=None):
+def make_path(source_result, project, sorptives=None, application=None):
     """
     Finds the path to your source data, or makes path to in which to save
     results. Used in psd_processing and uptake_processing. Will implement in
