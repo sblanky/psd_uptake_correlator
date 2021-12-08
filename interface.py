@@ -61,7 +61,7 @@ while uptake_samples != psd_samples:
     print(f"sample name mismatch:\nuptake:\t{uptake_samples}\npsd:\t{psd_samples}")
     C = input("please adjust files in directory. Input C to continue. ") 
     if C == 'C':
-        uptake_samples = list(make_files_samples_df(uptake_dir).loc[:,'sample'])
+        uptake_samples = list(make_files_samples_df(uptake_dir).loc[:, 'sample'])
         psd_samples = []
         for s in os.listdir(psd_dir):
             psd_samples.append(get_sample_name(s, psd_dir))
@@ -74,12 +74,12 @@ while input(f"Would you like to create a loading dataframe? [y/n]") == "y":
     p_start = float(input("Start pressure:\t "))
     p_stop = float(input("End pressure:\t "))
     p_step = float(input("Increment:\t "))
-    loading_df = process_uptake(project, uptake_sorptive, 298, now, ['DSLangmuir',
-                                                           'TSLangmuir'],
+    loading_df = process_uptake(project, uptake_sorptive, 298, now,
+                                ['DSLangmuir', 'TSLangmuir'],
                                 p_start=p_start, p_stop=p_stop, p_step=p_step)
     break
 
-while input(f"Would you like to creat the parameter dataframe? [y/n]") == "y":
+while input("Would you like to creat the parameter dataframe? [y/n]") == "y":
     print("""A dataframe of parameters within pore ranges will now be created according to your input""")
     print("""Please width values in angstroms""")
     wstart = float(input("Start width:\t "))
@@ -90,6 +90,14 @@ while input(f"Would you like to creat the parameter dataframe? [y/n]") == "y":
     param_df, data_dict = process_psd(project, psd_sorptive, psd_parameter, now,
                                       wstart=wstart, wstop=wstop, wstep=wstep)
     break
+
+correlation_df_size = len(param_df) * len(loading_df)
+while input(f"""Would you like to creat the parameter dataframe? \
+            {correlation_df_size} regressions required. [y/n]""") == "y":
+    correlation_df, n = make_correlation_df(loading_df, param_df, data_dict, now,
+                                            to_csv=True)
+    break
+
 """
 loading_df.to_csv(f"{results_path}loading_df.csv")
 
