@@ -7,4 +7,5 @@ Steps to use:
  2. Activate environment
  3. Use pip to install the dev build of pyGAPS. `pip install git+https://github.com/pauliacomi/pyGAPS@develop`
 
+This is to avoid the problem found [here](https://stackoverflow.com/questions/70248438/module-breaks-when-loaded-into-multiple-scripts).
 Thanks to @pauliacomi for help with the above.
