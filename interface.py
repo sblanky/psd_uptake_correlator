@@ -77,6 +77,7 @@ while input(f"Would you like to create a loading dataframe? [y/n]") == "y":
     loading_df = process_uptake(project, uptake_sorptive, 298, now,
                                 ['DSLangmuir', 'TSLangmuir'],
                                 p_start=p_start, p_stop=p_stop, p_step=p_step)
+    loading_df.to_csv(f"{results_path}loading_df.csv")
     break
 
 while input("Would you like to creat the parameter dataframe? [y/n]") == "y":
@@ -89,13 +90,21 @@ while input("Would you like to creat the parameter dataframe? [y/n]") == "y":
 
     param_df, data_dict = process_psd(project, psd_sorptive, psd_parameter, now,
                                       wstart=wstart, wstop=wstop, wstep=wstep)
+    param_df.to_csv(f"{results_path}param_df.csv")
     break
 
 correlation_df_size = len(param_df) * len(loading_df)
-while input(f"""Would you like to creat the parameter dataframe? \
-            {correlation_df_size} regressions required. [y/n]""") == "y":
+while input("Would you like to create the parameter dataframe?\n" 
+            f"{correlation_df_size} regressions required. [y/n]") == "y":
     correlation_df, n = make_correlation_df(loading_df, param_df, data_dict, now,
                                             to_csv=True)
+    correlation_df.to_csv(f"{results_path}correlation_df.csv")
+    break
+
+while input("Would you like to calculate the best pore size range at each pressure? [y/n]") == "y":
+    bwap = find_best_width_at_pressure(correlation_df, to_csv=False)
+    graph_bwap(bwap, results_path)
+    bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
     break
 
 """
