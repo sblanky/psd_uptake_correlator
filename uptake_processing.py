@@ -113,7 +113,7 @@ def make_model_isotherm_dict(path, temperature,
                              project=None, adsorbate=None, 
                              guess_models=['TSLangmuir', 
                                           'DSLangmuir'],
-                             p_start=0.01, p_stop=20.00,
+                             p_start=0.01, p_stop=20.00, p_step=0.01,
                              cut_data=None,
                              write_csv=False, verbose=False,
                              clean_isos=True): 
@@ -220,7 +220,7 @@ def make_model_isotherm_dict(path, temperature,
                                         )
         
         # and generate a point isotherm
-        pressure_points = np.arange(p_start, p_stop, 1)
+        pressure_points = np.arange(p_start, p_stop, p_step)
         new_pointisotherm = pygaps.PointIsotherm.from_modelisotherm(
             model_iso,
             pressure_points = pressure_points
@@ -277,9 +277,10 @@ def process_uptake(project, sorptive, temperature, now,
                     guess_models, p_start=0.01, p_stop=10.00, p_step=0.01):
     path = make_path('source', project, sorptive, 'uptake')
     data = make_model_isotherm_dict(path, temperature, 
-                                         guess_models, adsorbate=sorptive, 
-                                         p_start=p_start, p_stop=p_stop,
-                                         clean_isos=True)
+                                 guess_models, adsorbate=sorptive, 
+                                 p_start=p_start, 
+                                  p_stop=p_stop, p_step=p_step, 
+                                 clean_isos=True)
     results_path = f"{make_path('result', project, sorptive)}{now}/"
     
     print(f"""Generating loading DataFrame 

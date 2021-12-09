@@ -67,7 +67,7 @@ while uptake_samples != psd_samples:
             psd_samples.append(get_sample_name(s, psd_dir))
         continue
 
-while input(f"Would you like to create a loading dataframe? [y/n]") == "y":
+while input("Would you like to create a loading dataframe? [y/n]") == "y":
     results_path = f"{make_path('result', project)}/{now}/"
     if not os.path.exists(results_path):
         os.makedirs(results_path)
