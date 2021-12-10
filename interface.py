@@ -94,7 +94,7 @@ while input("Would you like to creat the parameter dataframe? [y/n]") == "y":
     break
 
 correlation_df_size = len(param_df) * len(loading_df)
-while input("Would you like to create the parameter dataframe?\n" 
+while input("Would you like to create the correlation dataframe?\n" 
             f"{correlation_df_size} regressions required. [y/n]") == "y":
     correlation_df, n = make_correlation_df(loading_df, param_df, data_dict, now,
                                             to_csv=True)

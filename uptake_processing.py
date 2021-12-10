@@ -163,24 +163,12 @@ def make_model_isotherm_dict(path, temperature,
         dictionary.
 
     """
-    
+
     model_isotherm_dict = {}
-    
+
     files_samples = make_files_samples_df(path)
     for i in files_samples.index:
         data = read_data(f"{path}{files_samples.file[i]}")
-        """
-        file_path = Path(f"{path}{files_samples.file[i]}")
-        file_extension = file_path.suffix.lower()[1:]
-        if file_extension == 'xlsx':
-            data = pd.read_excel(file_path, engine='openpyxl')
-        elif file_extension == 'xls':
-            data = pd.read_excel(file_path.read())
-        elif file_extension == 'csv':
-            data = pd.read_csv(file_path.read())
-        else:
-            raise Exception("File not supported")
-        """
 
         # data = pd.read_excel(path_to_file, engine='openpyxl')
         if clean_isos == True: # remove any bad data
@@ -191,15 +179,15 @@ def make_model_isotherm_dict(path, temperature,
             else:
                 print('invalid value for cut_data, please input a pressure')
                 continue
-         
+
         data['P'] = data['P'].multiply(0.001) # assume data in mbar, convert to bar
         isotherm = pygaps.PointIsotherm( # reading in data as point isotherm
             isotherm_data=data,
             pressure_key='P',
             loading_key='Conc.',
-            
-            pressure_mode='absolute',       
-            pressure_unit='bar',            
+
+            pressure_mode='absolute',
+            pressure_unit='bar',
             material_basis='mass',
             material_unit='g',
             loading_basis='molar',
@@ -210,31 +198,30 @@ def make_model_isotherm_dict(path, temperature,
             adsorbate = adsorbate,
             temperature = temperature,
             )
-        
+
         # then atempt to fit models to point isotherm
         model_iso = pygaps.ModelIsotherm.from_pointisotherm(
-                                        isotherm,                                                   
+                                        isotherm,
                                         branch='ads',
                                         model=guess_models,
                                         verbose=verbose
                                         )
-        
         # and generate a point isotherm
         pressure_points = np.arange(p_start, p_stop, p_step)
         new_pointisotherm = pygaps.PointIsotherm.from_modelisotherm(
             model_iso,
             pressure_points = pressure_points
             ) 
-        
+
         if write_csv == True: # not working, fix later
             if not os.path.exists(results_path):
                 os.makedirs(results_path)
             pygaps.isotherm_to_csv(
                 isotherm = new_pointisotherm,
                 path = results_path+isotherm.material+'.csv')
-        
+
         model_isotherm_dict[isotherm.material] = new_pointisotherm.data()
-        
+ 
     return model_isotherm_dict
 
 def loading_df(data_dict):
