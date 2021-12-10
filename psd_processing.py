@@ -196,26 +196,26 @@ def parameter_df(data_dict,
     for d in data_dict:
         param_cols.append(f"param_{d}")
     param_df = pd.DataFrame(columns = param_cols)
-    
+ 
     i = 0 
-    if logstep == True: # logstep part needs work. Only do linear for now.
-        if num == None:
+    if logstep: # logstep part needs work. Only do linear for now.
+        if num is None:
             print('''
                   if you set logstep as true, you must also specify
                   number of points (num) to calculate.
                   ''')
-        else:  
+        else:
             base=10
             wstart = m.log(wstart, base)
             wstop = m.log(wstop, base)
             array = np.logspace(wstart, wstop, base=base, num=num)
-   
-    elif logstep == False: # use a linear step
-        if wstep == None:
+ 
+    elif logstep is False: # use a linear step
+        if wstep is None:
             print('No interval (wstep) entered for linear sequence.')
         else:
             array = np.arange(wstart, wstop, wstep) 
-    
+ 
     for wmax in array[1:]: 
         for wmin in np.arange(wstart, wmax, wstep):
             param_df.loc[i, 'wmax'] = wmax
@@ -225,11 +225,11 @@ def parameter_df(data_dict,
                                        wmin=wmin, wmax=wmax)
                 param_df.loc[i, 'param_'+d] = param # appends to df
             i+=1 # Go through all possible values of wmin for wmax
-            
-    if to_csv == True: # saves results to csv if wanted.
-        if csv_path == None:
+
+    if to_csv: # saves results to csv if wanted.
+        if csv_path is None:
             print('No path specified, can\'t save csv')
-        else:   
+        else: 
             if not os.path.exists(csv_path):
                 os.makedirs(csv_path)
             param_df.to_csv(f"{csv_path}param_df.csv")
@@ -284,7 +284,7 @@ def process_psd(project, sorptives, parameter, now,
                          wstart, wstop,
                          wstep,
                          parameter) 
-    report_txt = open(f"{results_path}psd_report.txt",'w')
+    report_txt = open(f"{results_path}psd_report.txt", 'w')
     report_txt.write(report)
     report_txt.close()
     print(f"Parameter dataframe and report saved in {results_path}")
