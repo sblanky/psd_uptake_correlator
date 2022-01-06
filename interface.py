@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+
 import sys, os
-from psd_processing import process_psd, get_sample_name  
+from psd_processing import process_psd, get_sample_name
 from uptake_processing import process_uptake, make_files_samples_df
 from best_width_at_pressure import make_correlation_df, find_best_width_at_pressure, graph_bwap
 from paths import make_path
@@ -67,7 +69,7 @@ while uptake_samples != psd_samples:
             psd_samples.append(get_sample_name(s, psd_dir))
         continue
 
-while input("Would you like to create a loading dataframe? [y/n]") == "y":
+while input("Would you like to create the loading dataframe? [y/n] ") == "y":
     results_path = f"{make_path('result', project)}/{now}/"
     if not os.path.exists(results_path):
         os.makedirs(results_path)
@@ -80,7 +82,7 @@ while input("Would you like to create a loading dataframe? [y/n]") == "y":
     loading_df.to_csv(f"{results_path}loading_df.csv")
     break
 
-while input("Would you like to creat the parameter dataframe? [y/n]") == "y":
+while input("Would you like to create the parameter dataframe? [y/n] ") == "y":
     print("""A dataframe of parameters within pore ranges will now be created according to your input""")
     print("""Please width values in angstroms""")
     wstart = float(input("Start width:\t "))
@@ -95,7 +97,7 @@ while input("Would you like to creat the parameter dataframe? [y/n]") == "y":
 
 correlation_df_size = len(param_df) * len(loading_df)
 while input("Would you like to create the correlation dataframe?\n" 
-            f"{correlation_df_size} regressions required. [y/n]") == "y":
+            f"{correlation_df_size} regressions required. [y/n] ") == "y":
     correlation_df, n = make_correlation_df(loading_df, param_df, data_dict, now,
                                             to_csv=True)
     correlation_df.to_csv(f"{results_path}correlation_df.csv")
@@ -106,19 +108,3 @@ while input("Would you like to calculate the best pore size range at each pressu
     graph_bwap(bwap, results_path)
     bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
     break
-
-"""
-loading_df.to_csv(f"{results_path}loading_df.csv")
-
-param_df, data_dict = process_psd('0020_thria', 'n2', 'V', now, wstart =4,
-                                  wstop=100)
-param_df.to_csv(f"{results_path}param_df.csv")
-
-correlation_df, n = make_correlation_df(loading_df, param_df, data_dict, now,
-                                        to_csv=True)
-correlation_df.to_csv(f"{results_path}correlation_df.csv")
-
-bwap = find_best_width_at_pressure(correlation_df, to_csv=False)
-graph_bwap(bwap, results_path)
-bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
-"""
