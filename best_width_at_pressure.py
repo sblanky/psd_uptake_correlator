@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 from paths import make_path
-
+from progress_bar import print_progress_bar
 import matplotlib.pyplot as plt
 
 def print_progress_bar(i, maximum, post_text):

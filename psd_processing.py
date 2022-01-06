@@ -10,7 +10,7 @@ import numpy as np
 import math as m
 import glob, re, os
 from paths import make_path
-
+from progress_bar import print_progress_bar
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
@@ -35,7 +35,7 @@ def get_sample_name(file, path):
     # swap / for \ in path
     path = path[:-1]
     path = path+r"\\" 
-    
+
     sample_name = re.sub(path, '', file) # remove path
     sample_name = re.sub(re.escape('.CSV'), '',  # remove .csv
                          sample_name, flags=re.IGNORECASE)
@@ -60,7 +60,7 @@ def make_data_dict(sample_names, path):
 
     """
     data_dict = {}
-    
+
     # Select only pore width, surface area, pore volume
     # columns (both differential and cumulative)
     fields = ('w', 'dV/dw', 'V cum', 'dS/dw', 'S cum')
@@ -224,6 +224,7 @@ def parameter_df(data_dict,
                 param = find_parameter(data_dict[d], measure='V',
                                        wmin=wmin, wmax=wmax)
                 param_df.loc[i, 'param_'+d] = param # appends to df
+            print_progress_bar(i, len(array), '')
             i+=1 # Go through all possible values of wmin for wmax
 
     if to_csv: # saves results to csv if wanted.
