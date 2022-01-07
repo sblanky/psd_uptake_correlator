@@ -8,6 +8,7 @@ thria_co2.py
 scipy_testing.py
 conda_list
 pyGAPS/
+bwap_top_testing.py
 
 # vim temporary files
 [._]*.sw[a-z]

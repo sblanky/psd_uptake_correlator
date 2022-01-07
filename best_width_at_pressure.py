@@ -14,13 +14,6 @@ from paths import make_path
 from progress_bar import print_progress_bar
 import matplotlib.pyplot as plt
 
-def print_progress_bar(i, maximum, post_text):
-    n_bar=20 
-    j = i/maximum
-    sys.stdout.write('\r')
-    sys.stdout.write(f"[{'#' * int(n_bar * j):{n_bar}s}] {int(100 * j)}% {post_text}")
-    sys.stdout.flush()
-
 def make_correlation_df(loading_df, param_df, data_dict, now,
                         to_csv=False, results_path=None,
                         show_correlations=False):
@@ -84,7 +77,8 @@ print(correlation_df)
 
 def find_best_width_at_pressure(correlation_df, 
                                 to_csv=True, results_path=None, 
-                                graph=True, show_correlations=False):
+                                graph=True, show_correlations=False,
+                                drop=False):
     print("Finding best pore width at all pressures.")
     colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c']
     best_width_at_pressure = pd.DataFrame(columns = colnames)
@@ -102,12 +96,15 @@ def find_best_width_at_pressure(correlation_df,
                 wmax = correlation_df.loc[r, 'wmax']
                 best_m = m
                 best_c = c
+                if drop:
+                   correlation_df.drop(index=r, inplace=True) 
+
         colvalues = [wmin, wmax, p, best, best_m, best_c]
         add_to_bwap = pd.DataFrame([colvalues],
                                    columns=colnames)
         bwap = bwap.append(add_to_bwap,
                            ignore_index=True)
-    
+
     print("...done")
     if to_csv == True:
         if not os.path.exists(results_path):
@@ -115,6 +112,17 @@ def find_best_width_at_pressure(correlation_df,
         bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
 
     return bwap
+
+def top_widths_at_pressure(depth, 
+                           correlation_df, 
+                           to_csv=True, results_path=None, 
+                           graph=True, show_correlations=False):
+    for d in range(depth):
+        bwap = find_best_width_at_pressure(correlation_df, to_csv, 
+                                      results_path, graph, show_correlations,
+                                      drop=True)
+        print(bwap)
+        
 
 def graph_bwap(bwap, results_path):
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,8), dpi=96)
