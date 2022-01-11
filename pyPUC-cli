@@ -1,0 +1,2 @@
+#!/bin/bash
+python3 ./pyPUC/interface.py

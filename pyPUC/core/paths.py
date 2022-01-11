@@ -1,6 +1,5 @@
 """
-For generating some strings for other modules. Currently only makes
-paths to source data. Will add more functionality later.
+Generates path strings for other modules.
 """
 
 import os
@@ -28,7 +27,7 @@ def make_path(source_result, project, sorptives=None, application=None):
     application : string
         Either uptake or psd (if source_result=source), or don't use (=None).
         Default is None.
-                d = pd.DataFrame(d)
+
     Returns
     -------
     path : string
@@ -52,10 +51,23 @@ def make_path(source_result, project, sorptives=None, application=None):
 
         if sorptives not in os.listdir(f"./source_data/{project}/{application}/"):
             raise ValueError(f"{sorptives} could not be found. Check that the directory {sorptives} exists in the {application} folder in {project}.")
-        
-        return f"../../source_data/{project}/{application}/{sorptives}/"
+        else: 
+            return f"../../source_data/{project}/{application}/{sorptives}/"
 
 def read_data(path):
+    """
+    Reads data from a given path, based on its extension.
+    
+    Parameters
+    ----------
+    path : string
+        path to file to be read in
+
+    Returns
+    -----------
+    pandas dataframe
+
+    """
     file_path = Path(f"{path}")
     file_extension = file_path.suffix.lower()[1:]
     if file_extension == 'xlsx':

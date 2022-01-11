@@ -10,8 +10,8 @@ import os, sys, signal
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
-from paths import make_path
-from progress_bar import print_progress_bar
+from core.paths import make_path
+from core.progress_bar import print_progress_bar
 import matplotlib.pyplot as plt
 
 def make_correlation_df(loading_df, param_df, data_dict, now,

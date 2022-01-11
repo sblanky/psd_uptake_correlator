@@ -9,7 +9,7 @@ import pygaps, os, numbers
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from paths import make_path, read_data 
+from core.paths import make_path, read_data 
 import datetime
 
 def make_files_samples_df(path):
