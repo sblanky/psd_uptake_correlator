@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 25 14:05:39 2021
-
-@author: pcxtsbl
-"""
-
-import pandas as pd
 import numpy as np
 import math as m
 import glob, re, os
@@ -40,7 +32,6 @@ def get_sample_name(file, path):
                          sample_name, flags=re.IGNORECASE)
     return sample_name
 
-# create dictionary of DataFrames
 def make_data_dict(sample_names, path):
     """
     Create a dictionary of PSD data for each sample
@@ -60,8 +51,7 @@ def make_data_dict(sample_names, path):
     """
     data_dict = {}
 
-    # Select only pore width, surface area, pore volume
-    # columns (both differential and cumulative)
+    # Select only pore width, surface area, pore volume columns
     fields = ('w', 'dV/dw', 'V cum', 'dS/dw', 'S cum')
     for s in sample_names:
         # read in sample file
@@ -195,8 +185,8 @@ def parameter_df(data_dict,
     for d in data_dict:
         param_cols.append(f"param_{d}")
     param_df = pd.DataFrame(columns = param_cols)
- 
-    i = 0 
+
+    i = 0
     if logstep: # logstep part needs work. Only do linear for now.
         if num is None:
             print('''

@@ -4,7 +4,20 @@ from pathlib import Path
 import pandas as pd
 
 def print_progress_bar(i, maximum, post_text):
-    n_bar=20 
+    """
+    prints progress bar as calculations performed
+    Implement within a for loop.
+
+    Parameters
+    ----------
+    i : int
+        current step
+    maximum :  int
+        maximum value reached
+    post_text : string
+        to display after progress bar
+    """
+    n_bar=20
     j = i/maximum
     sys.stdout.write('\r')
     sys.stdout.write(f"[{'#' * int(n_bar * j):{n_bar}s}] {int(100 * j)}% {post_text}")

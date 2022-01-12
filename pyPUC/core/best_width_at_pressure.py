@@ -14,7 +14,7 @@ from core.utils import make_path, print_progress_bar
 import matplotlib.pyplot as plt
 
 def make_correlation_df(loading_df, param_df, data_dict, now,
-                        to_csv=False, results_path=None,
+                        results_path=None,
                         show_correlations=False):
 
     colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c']
@@ -57,21 +57,14 @@ def make_correlation_df(loading_df, param_df, data_dict, now,
                 plt.close(f)
                 """
             n+=1
-            # print(n)
+
             correlation_df = correlation_df.append(correlation_one_row,
                                                    ignore_index=True)
             print_progress_bar(n, df_size, '')
 
     correlation_df = correlation_df[correlation_df.p != 0.0]
     print(f"\ncorrelation_df finished!")
-    """ fix this 
-    if to_csv == True:
-        results_path = f"{make_path('result', project, sorptives, 'psd')}/{now}/"
-    if not os.path.exists(results_path):
-        os.makedirs(results_path)
-    param_df.to_csv(f"{results_path}param_df.csv")
-print(correlation_df)
-    """ 
+
     return correlation_df, n  
 
 def find_best_width_at_pressure(correlation_df, 
@@ -114,14 +107,13 @@ def find_best_width_at_pressure(correlation_df,
 
 def top_widths_at_pressure(depth, 
                            correlation_df, 
-                           to_csv=True, results_path=None, 
+                           results_path=None, 
                            graph=True, show_correlations=False):
     for d in range(depth):
-        bwap = find_best_width_at_pressure(correlation_df, to_csv, 
-                                      results_path, graph, show_correlations,
-                                      drop=True)
+        bwap = find_best_width_at_pressure(correlation_df,
+                                          results_path, graph, show_correlations,
+                                          drop=True)
         print(bwap)
-        
 
 def graph_bwap(bwap, results_path):
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,8), dpi=96)
@@ -139,23 +131,23 @@ def correlation_requirements(correlation_df,
                              r_sq=None,
                              p=None,
                              w_range=None):
-    
+
     if positive_slope == True:
         correlation_df = correlation_df[correlation_df['m'] > 0]
-        
+
     if r_sq is not None: 
         if type(r_sq) == float and 0 <= r_sq <= 1 :
             correlation_df = correlation_df[correlation_df['r_sq'] > r_sq]
         else:
             print('Please use a number between 0 and 1 for r_sq')
-            
+
     if p is not None:
         if type(p) == float or type(p) == int:
             if p > 0:
                 correlation_df = correlation_df[correlation_df['p'] > p]
         else:
             print('Please use an number value for p')
-        
+
     if w_range is not None:
         if type(w_range) == tuple:
             if len(w_range) == 1:
@@ -169,5 +161,5 @@ def correlation_requirements(correlation_df,
                   Variable w_range must be assigned as a tuple. See help for
                   more information.
                   ''')
-                  
+
     return correlation_df
