@@ -9,8 +9,7 @@ import pandas as pd
 import numpy as np
 import math as m
 import glob, re, os
-from core.paths import make_path
-from core.progress_bar import print_progress_bar
+from core.utils import make_path, print_progress_bar
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')

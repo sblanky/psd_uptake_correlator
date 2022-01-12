@@ -4,7 +4,7 @@ import sys, os
 from core.psd_processing import process_psd, get_sample_name
 from core.uptake_processing import process_uptake, make_files_samples_df
 from core.best_width_at_pressure import make_correlation_df, find_best_width_at_pressure, graph_bwap
-from core.paths import make_path
+from core.utils import make_path
 import datetime
 import pandas as pd
 now_1 = datetime.datetime.now()

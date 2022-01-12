@@ -1,10 +1,17 @@
-"""
-Generates path strings for other modules.
-"""
-
+import sys
 import os
 from pathlib import Path
 import pandas as pd
+
+def print_progress_bar(i, maximum, post_text):
+    n_bar=20 
+    j = i/maximum
+    sys.stdout.write('\r')
+    sys.stdout.write(f"[{'#' * int(n_bar * j):{n_bar}s}] {int(100 * j)}% {post_text}")
+    sys.stdout.flush()
+
+def get_project_root():
+    return Path(__file__).parent.parent.parent
 
 def make_path(source_result, project, sorptives=None, application=None):
     """
@@ -33,6 +40,8 @@ def make_path(source_result, project, sorptives=None, application=None):
     path : string
         path to your source data.
 	"""
+    root = get_project_root()
+
     if source_result not in ['source', 'result']: 
         raise ValueError("Variable source_result must be either source or result")
 
@@ -40,7 +49,7 @@ def make_path(source_result, project, sorptives=None, application=None):
         if project is None:
             raise ValueError("Must have project name to generate results directory")
         else:
-            return f"../../results/{project}/"
+            return f"{root}/results/{project}/"
     
     elif source_result == 'source':
         if application not in ['uptake', 'psd']:
@@ -52,7 +61,7 @@ def make_path(source_result, project, sorptives=None, application=None):
         if sorptives not in os.listdir(f"./source_data/{project}/{application}/"):
             raise ValueError(f"{sorptives} could not be found. Check that the directory {sorptives} exists in the {application} folder in {project}.")
         else: 
-            return f"../../source_data/{project}/{application}/{sorptives}/"
+            return f"{root}/source_data/{project}/{application}/{sorptives}/"
 
 def read_data(path):
     """

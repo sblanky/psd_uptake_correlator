@@ -1,5 +1,5 @@
 """
-Corrleates volumes or surface area within all possible pore ranges to gas
+Correlates volumes or surface area within all possible pore ranges to gas
 uptakes at all pressures, in user-defined ranges.
 """
 
@@ -10,8 +10,7 @@ import os, sys, signal
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
-from core.paths import make_path
-from core.progress_bar import print_progress_bar
+from core.utils import make_path, print_progress_bar
 import matplotlib.pyplot as plt
 
 def make_correlation_df(loading_df, param_df, data_dict, now,
