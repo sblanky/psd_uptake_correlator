@@ -17,5 +17,7 @@ Steps to use
  3. Use pip to install the dev build of pyGAPS. `pip install git+https://github.com/pauliacomi/pyGAPS@develop`[^2]
  4. If you want to use the CLI, simply type `pyPUC-cli`. 
 
+The cloned repo can also be installed using `pip install .`
+
 [^1]: python 3.8 is required due to compatibility issues with the coolprop backend in pyGAPS.
 [^2]: This is to avoid the problem found [here](https://stackoverflow.com/questions/70248438/module-breaks-when-loaded-into-multiple-scripts). Thanks to [@pauliacomi](https://github.com/pauliacomi) for help with the above.
