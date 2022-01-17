@@ -98,12 +98,13 @@ while input("Would you like to create the parameter dataframe? [y/n] ") == "y":
 correlation_df_size = len(param_df) * len(loading_df)
 while input("Would you like to create the correlation dataframe?\n" 
             f"{correlation_df_size} regressions required. [y/n] ") == "y":
-    correlation_df, n = make_correlation_df(loading_df, param_df, data_dict, now,
-                                            to_csv=True)
+    correlation_df, n = make_correlation_df(loading_df, param_df, data_dict,
+                                            now)
     correlation_df.to_csv(f"{results_path}correlation_df.csv")
     break
 
-while input("Would you like to calculate the best pore size range at each pressure? [y/n]") == "y":
+while input("Would you like to calculate the best n pore size ranges at each pressure? [y/n]") == "y":
+    depth = int(input("Please input n: "))
     bwap = find_best_width_at_pressure(correlation_df, to_csv=False)
     graph_bwap(bwap, results_path)
     bwap.to_csv(f"{results_path}best_width_at_pressure.csv")

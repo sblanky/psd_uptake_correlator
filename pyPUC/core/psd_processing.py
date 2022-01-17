@@ -1,7 +1,8 @@
+import pandas as pd
 import numpy as np
 import math as m
 import glob, re, os
-from core.utils import make_path, print_progress_bar
+from core.utils import make_path, print_progress_bar, read_data
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
@@ -55,7 +56,7 @@ def make_data_dict(sample_names, path):
     fields = ('w', 'dV/dw', 'V cum', 'dS/dw', 'S cum')
     for s in sample_names:
         # read in sample file
-        sample_df = pd.read_csv(f"{path}{s}.CSV", usecols=fields)
+        sample_df = read_data(f"{path}{s}.CSV")
         # change column names to be more usable later
         sample_df.columns = sample_df.columns.str.replace('/', '')
         sample_df.columns = sample_df.columns.str.replace(' ', '')
