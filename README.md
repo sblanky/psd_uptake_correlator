@@ -1,4 +1,4 @@
-pyPUC (Python Porosity Uptake Correlator) is an attempt to calculate the optimum pore size range of some type of material for gas uptake at pressures in a range. It is a work in progress but now has some limited CLI functionality. 
+pyPUC (Python Porosity Uptake Correlator) is an attempt to calculate the optimum pore size range of some type of material for gas uptake at pressures in a range. It is a work in progress but now has some limited CLI functionality. Any serious calculations will likely require use of an HPC. 
 
 How it works
 ============
@@ -15,7 +15,7 @@ Steps to use
     `conda create -n <env> python=3.8 numpy nomkl scipy pandas xlwt xlrd requests matplotlib`[^1]
  2. Activate environment inside your cloned repo.
  3. Use pip to install the dev build of pyGAPS. `pip install git+https://github.com/pauliacomi/pyGAPS@develop`[^2]
- 4. If you want to use the CLI, simply type `pyPUC-cli`. 
+ 4. If you want to use the CLI, simply type `./pyPUC-cli` and press enter. 
 
 The cloned repo can also be installed using `pip install .`
 
