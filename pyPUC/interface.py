@@ -3,7 +3,8 @@
 import sys, os
 from core.psd_processing import process_psd, get_sample_name
 from core.uptake_processing import process_uptake, make_files_samples_df
-from core.best_width_at_pressure import make_correlation_df, find_best_width_at_pressure, graph_bwap
+# from core.best_width_at_pressure import make_correlation_df, find_best_width_at_pressure, graph_bwap
+from core.best_width_at_pressure import make_correlation_df, top_widths_at_pressure
 from core.utils import make_path
 import datetime
 import pandas as pd
@@ -103,9 +104,14 @@ while input("Would you like to create the correlation dataframe?\n"
     correlation_df.to_csv(f"{results_path}correlation_df.csv")
     break
 
-while input("Would you like to calculate the best n pore size ranges at each pressure? [y/n]") == "y":
+while input("Would you like to calculate the best n pore size ranges at each pressure? [y/n] ") == "y":
     depth = int(input("Please input n: "))
-    bwap = find_best_width_at_pressure(correlation_df, to_csv=False)
-    graph_bwap(bwap, results_path)
-    bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
+    twap = top_widths_at_pressure(depth, correlation_df, graph=False)
+    twap_path = f"{results_path}twap/"
+    print(twap_path)
+    if not os.path.exists(twap_path):
+        os.makedirs(twap_path)
+    for d in twap:
+        print(twap[d])
+        twap[d].to_csv(f"{twap_path}{d}")
     break

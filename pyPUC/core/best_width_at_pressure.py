@@ -109,11 +109,12 @@ def top_widths_at_pressure(depth,
                            correlation_df, 
                            results_path=None, 
                            graph=True, show_correlations=False):
+    twap = {}
     for d in range(depth):
-        bwap = find_best_width_at_pressure(correlation_df,
+         twap[d] = find_best_width_at_pressure(correlation_df,
                                           results_path, graph, show_correlations,
                                           drop=True)
-        print(bwap)
+    return twap
 
 def graph_bwap(bwap, results_path):
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,8), dpi=96)
