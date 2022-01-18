@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Module for processing multiple gas uptake isotherms. Use this to generate 
-model isotherms from a set of experimental isotherm (using pygaps), then 
+Module for processing multiple gas uptake isotherms. Use this to generate
+model isotherms from a set of experimental isotherm (using pygaps), then
 generate point isotherms from these isotherms with identical pressure points.
 """
 
@@ -9,15 +9,15 @@ import pygaps, os, numbers
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from core.utils import make_path, read_data 
+from core.utils import make_path, read_data
 import datetime
 
 def make_files_samples_df(path):
     """
-    Generates a dataframe with two columns; 
+    Generates a dataframe with two columns;
     'sample' - the sample name
     'file' - path to to the isotherm file (.xlsx)
-    
+
     Parameters
     ----------
     path : string
@@ -29,7 +29,7 @@ def make_files_samples_df(path):
 	"""
     files = os.listdir(path)
     files_samples = pd.DataFrame(data=None)
-    
+
     isotherm_files = []
     for file in files: # add uptake relative filepaths to isotherm_files
         if (".xlsx" in file): # but only if .xlsx
@@ -76,8 +76,15 @@ def clean_isotherms(data,
         Cleaned isotherm.
 
     """
-    data.columns = ['P', 'Conc.'] # so we can work with later
-    # drop all non numeric and NaN
+    
+    # drop irrelevant columns and change names
+    if len(data.columns) > 2:
+        for col in data.columns:
+            if col not in ['P', 'Conc.', 'Pressure', 'Concentration',]:
+                data = data.drop(columns=col)
+    data.columns = data.columns.str.replace('Pressure', 'P')
+    data.columns = data.columns.str.replace('Concentration', 'Conc.')
+
     data = data.dropna()
     data = (data
             .drop(data.columns, axis=1)
@@ -168,9 +175,8 @@ def make_model_isotherm_dict(path, temperature,
 
     files_samples = make_files_samples_df(path)
     for i in files_samples.index:
+        print(i)
         data = read_data(f"{path}{files_samples.file[i]}")
-
-        # data = pd.read_excel(path_to_file, engine='openpyxl')
         if clean_isos == True: # remove any bad data
             data = pd.DataFrame(clean_isotherms(data))
         if cut_data is not None:

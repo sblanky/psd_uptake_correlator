@@ -43,7 +43,7 @@ def make_path(source_result, project, sorptives=None, application=None):
     project : string
         Name of your project, usually in the form ####_*, i.e. four numbers and then some alphanumeric description.
     sorptives : string
-        The name of the sorptive(s) you want to use the data from. 
+        The name of the sorptive(s) you want to use the data from.
     application : string
         Either uptake or psd (if source_result=source), or don't use (=None).
         Default is None.
@@ -55,7 +55,7 @@ def make_path(source_result, project, sorptives=None, application=None):
 	"""
     root = get_project_root()
 
-    if source_result not in ['source', 'result']: 
+    if source_result not in ['source', 'result']:
         raise ValueError("Variable source_result must be either source or result")
 
     elif source_result == 'result':
@@ -63,15 +63,15 @@ def make_path(source_result, project, sorptives=None, application=None):
             raise ValueError("Must have project name to generate results directory")
         else:
             return f"{root}/results/{project}/"
-    
+
     elif source_result == 'source':
         if application not in ['uptake', 'psd']:
             raise ValueError(f"Application variable must be either \'uptake\' or \'psd\'. You have input {application}.")
 
-        if project not in os.listdir("./source_data/"):
+        if project not in os.listdir(f"{root}/source_data/"):
             raise ValueError(f"{project} is an invalid project, please check project file exists in source_data")
 
-        if sorptives not in os.listdir(f"./source_data/{project}/{application}/"):
+        if sorptives not in os.listdir(f"{root}/source_data/{project}/{application}/"):
             raise ValueError(f"{sorptives} could not be found. Check that the directory {sorptives} exists in the {application} folder in {project}.")
         else: 
             return f"{root}/source_data/{project}/{application}/{sorptives}/"
