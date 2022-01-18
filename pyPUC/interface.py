@@ -91,7 +91,7 @@ while input("\nWould you like to create the loading dataframe? [y/n] ") == "y":
                     'GAB', 'Freundlich', 'DR', 'Toth', 
                    ]
     loading_df = process_uptake(project, uptake_sorptive, 298, now,
-                                ['DSLangmuir', 'TSLangmuir'],
+                                guess_models,
                                 p_start=p_start, p_stop=p_stop, p_step=p_step)
     loading_df.to_csv(f"{results_path}loading_df.csv")
     break
