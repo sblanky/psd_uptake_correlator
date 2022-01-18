@@ -82,8 +82,12 @@ def clean_isotherms(data,
         for col in data.columns:
             if col not in ['P', 'Conc.', 'Pressure', 'Concentration',]:
                 data = data.drop(columns=col)
-    data.columns = data.columns.str.replace('Pressure', 'P')
-    data.columns = data.columns.str.replace('Concentration', 'Conc.')
+            if col == 'Pressure':
+                data.rename(columns = {col:'P'}, inplace=True)
+            if col == 'Concentration':
+                data.rename(columns = {col:'Conc.'}, inplace=True)
+    else:
+        data.columns = ['P', 'Conc.']
 
     data = data.dropna()
     data = (data
@@ -175,7 +179,6 @@ def make_model_isotherm_dict(path, temperature,
 
     files_samples = make_files_samples_df(path)
     for i in files_samples.index:
-        print(i)
         data = read_data(f"{path}{files_samples.file[i]}")
         if clean_isos == True: # remove any bad data
             data = pd.DataFrame(clean_isotherms(data))

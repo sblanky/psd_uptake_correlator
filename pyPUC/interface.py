@@ -87,6 +87,9 @@ while input("\nWould you like to create the loading dataframe? [y/n] ") == "y":
     p_start = float(input("Start pressure:\t "))
     p_stop = float(input("End pressure:\t "))
     p_step = float(input("Increment:\t "))
+    guess_models = ['Langmuir', 'DSLangmuir', 'TSLangmuir',
+                    'GAB', 'Freundlich', 'DR', 'Toth', 
+                   ]
     loading_df = process_uptake(project, uptake_sorptive, 298, now,
                                 ['DSLangmuir', 'TSLangmuir'],
                                 p_start=p_start, p_stop=p_stop, p_step=p_step)
