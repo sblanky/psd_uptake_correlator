@@ -251,9 +251,28 @@ def make_report(project, sorptive, temperature, guess_models,
 
     Parameters
     ----------
+    project : string, optional
+        Current project dataset. 
+        The default is None.
+    sorptive : string, optional
+        Experimental adsorbate, needed for pygaps.PointIsotherm. 
+        The default is None.
+    temperature : int
+        Analysis temperature
+    guess_models : list, optional
+        Models to use when fitting to experimental isotherm. 
+        The default is ['TSLangmuir', 'DSLangmuir'].
+    p_start : int, float, optional
+        Initial pressure point of point isotherm generated from fit. 
+        The default is 0.01.
+    p_stop : int, float, optional
+        final pressure point of point isotherm generated from fit.
+        The default is 20.00.
 
     Returns
     -------
+    report : string
+        Reports on analysis just run
     """
     path = make_path('source', project, sorptive, 'uptake')
     date_time = datetime.datetime.now().strftime('%H:%M on %y-%m-%d')
@@ -271,6 +290,38 @@ def make_report(project, sorptive, temperature, guess_models,
 
 def process_uptake(project, sorptive, temperature, now,
                     guess_models, p_start=0.01, p_stop=10.00, p_step=0.01):
+
+    """
+    Processes uptake into a loading dataframe from specified project and
+    sorptive in source_data dir.
+
+    Parameters
+    ----------
+    project : string, optional
+        Current project dataset. 
+        The default is None.
+    sorptive : string, optional
+        Experimental adsorbate, needed for pygaps.PointIsotherm. 
+        The default is None.
+    temperature : int
+        Analysis temperature
+    now : string
+        current time
+    guess_models : list, optional
+        Models to use when fitting to experimental isotherm. 
+        The default is ['TSLangmuir', 'DSLangmuir'].
+    p_start : int, float, optional
+        Initial pressure point of point isotherm generated from fit. 
+        The default is 0.01.
+    p_stop : int, float, optional
+        final pressure point of point isotherm generated from fit.
+        The default is 20.00.
+
+    Returns
+    -------
+    loadings : DataFrame
+        loadings of all samples at array of pressures
+    """
     path = make_path('source', project, sorptive, 'uptake')
     data = make_model_isotherm_dict(path, temperature, 
                                  guess_models, adsorbate=sorptive, 
