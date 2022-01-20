@@ -205,7 +205,11 @@ def parameter_df(data_dict,
             print('No interval (wstep) entered for linear sequence.')
         else:
             array = np.arange(wstart, wstop, wstep) 
- 
+
+    # real size of array 
+    n = len(array) + 1
+    # total number of width ranges to be calculated
+    t = (np.math.factorial(n) / np.math.factorial(n - 2)) / 2
     for wmax in array[1:]: 
         for wmin in np.arange(wstart, wmax, wstep):
             param_df.loc[i, 'wmax'] = wmax
@@ -214,7 +218,7 @@ def parameter_df(data_dict,
                 param = find_parameter(data_dict[d], measure='V',
                                        wmin=wmin, wmax=wmax)
                 param_df.loc[i, 'param_'+d] = param # appends to df
-            print_progress_bar(i, len(array), '')
+            print_progress_bar(i, t, '')
             i+=1 # Go through all possible values of wmin for wmax
 
     if to_csv: # saves results to csv if wanted.
