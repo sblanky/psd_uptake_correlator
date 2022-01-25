@@ -17,7 +17,7 @@ def make_correlation_df(loading_df, param_df, data_dict, now,
                         results_path=None,
                         show_correlations=False):
 
-    colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c']
+    colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c', 'x', 'y']
     correlation_df = pd.DataFrame(columns = colnames)
     n=0
     df_size = len(param_df) * len(loading_df)
@@ -29,6 +29,7 @@ def make_correlation_df(loading_df, param_df, data_dict, now,
         for d in data_dict:
             x.append(row['param_'+d])
         x = np.array(x)
+        print(max(x))
         r_sq_at_width = np.array([])
         for index, row in loading_df.iterrows():
             p = row['pressure']
@@ -39,7 +40,7 @@ def make_correlation_df(loading_df, param_df, data_dict, now,
             slope, intercept, r_value, p_value, std_err = linregress(x, y)
             r_sq = r_value**2
             np.append(r_sq_at_width, r_sq)
-            colvalues = [wmin, wmax, p, r_sq, slope, intercept]
+            colvalues = [wmin, wmax, p, r_sq, slope, intercept, x, y]
             correlation_one_row = pd.DataFrame([colvalues],
                                                columns=colnames)
             """ this needs fixing
