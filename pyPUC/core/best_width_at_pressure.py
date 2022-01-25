@@ -29,7 +29,6 @@ def make_correlation_df(loading_df, param_df, data_dict, now,
         for d in data_dict:
             x.append(row['param_'+d])
         x = np.array(x)
-        print(max(x))
         r_sq_at_width = np.array([])
         for index, row in loading_df.iterrows():
             p = row['pressure']
