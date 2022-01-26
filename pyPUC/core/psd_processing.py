@@ -145,6 +145,7 @@ def find_parameter(sample_df, measure,
         return parameter
     
 def parameter_df(data_dict, 
+                 measure='V',
                  wstart=3, wstop=50, wstep=1,
                  logstep=False, num=None,
                  to_csv=False, csv_path=None):
@@ -215,7 +216,7 @@ def parameter_df(data_dict,
             param_df.loc[i, 'wmax'] = wmax
             param_df.loc[i, 'wmin'] = wmin
             for d in data_dict: # finds parameters between wmin and wmax,
-                param = find_parameter(data_dict[d], measure='V',
+                param = find_parameter(data_dict[d], measure=measure,
                                        wmin=wmin, wmax=wmax)
                 param_df.loc[i, 'param_'+d] = param # appends to df
             print_progress_bar(i, t, '')
@@ -267,6 +268,7 @@ def process_psd(project, sorptives, parameter, now,
     path = make_path('source', project, sorptives, 'psd')
     data_dict = data_collect(path)
     param_df = parameter_df(data_dict,
+                            measure=parameter,
                             wstart=wstart,
                             wstop=wstop, wstep=wstep)
     results_path = f"{make_path('result', project, sorptives, 'psd')}/{now}/"

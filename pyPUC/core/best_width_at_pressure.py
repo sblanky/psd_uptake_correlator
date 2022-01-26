@@ -42,20 +42,6 @@ def make_correlation_df(loading_df, param_df, data_dict, now,
             colvalues = [wmin, wmax, p, r_sq, slope, intercept, x, y]
             correlation_one_row = pd.DataFrame([colvalues],
                                                columns=colnames)
-            """ this needs fixing
-            if show_correlations == True:
-                f, ax = plt.subplots(nrows=1, ncols=1, 
-                                     figsize=(8,8), dpi=96)
-                ax.scatter(x, y, ec='k', fc='none')
-                x_line = np.linspace(min(x), max(x), 100)
-                y_line = slope*x_line+intercept
-                ax.plot(x_line, y_line, color='k')
-                path_to_graphs = f"{csv_path}/graphs/{str(wmin)}-{str(wmax)}/"
-                if not os.path.exists(path_to_graphs):
-                    os.makedirs(path_to_graphs)
-                f.savefig(f"{path_to_graphs}p{str(p)}_bar.png")
-                plt.close(f)
-                """
             n+=1
 
             correlation_df = correlation_df.append(correlation_one_row,
@@ -72,8 +58,8 @@ def find_best_width_at_pressure(correlation_df,
                                 graph=True, show_correlations=False,
                                 drop=False):
     print("Finding best pore width at all pressures.")
-    colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c']
-    best_width_at_pressure = pd.DataFrame(columns = colnames)
+    colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c', 'x', 'y']
+    best_width_at_pressure = pd.DataFrame(columns=colnames)
     bwap = best_width_at_pressure
     for p in correlation_df.p.unique():
         rows = correlation_df[correlation_df['p']==p].index.tolist()
@@ -88,10 +74,12 @@ def find_best_width_at_pressure(correlation_df,
                 wmax = correlation_df.loc[r, 'wmax']
                 best_m = m
                 best_c = c
+                x = correlation_df.loc[r, 'x']
+                y = correlation_df.loc[r, 'y']
                 if drop:
                    correlation_df.drop(index=r, inplace=True) 
 
-        colvalues = [wmin, wmax, p, best, best_m, best_c]
+        colvalues = [wmin, wmax, p, best, best_m, best_c, x, y]
         add_to_bwap = pd.DataFrame([colvalues],
                                    columns=colnames)
         bwap = bwap.append(add_to_bwap,
