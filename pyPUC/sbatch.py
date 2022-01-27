@@ -1,3 +1,7 @@
+"""
+Use to run batch job, e.g. on an HPC. Modify to your needs.
+"""
+
 import sys, os
 from core.psd_processing import process_psd, get_sample_name
 from core.uptake_processing import process_uptake, make_files_samples_df
