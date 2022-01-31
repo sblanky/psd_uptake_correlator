@@ -289,7 +289,7 @@ def make_report(project, sorptive, temperature, guess_models,
 
 def process_uptake(project, sorptive, temperature, now,
                   guess_models, p_start=0.01, p_stop=10.00, i=0.01,
-                  log=False, base=None):
+                  log=False, base=10):
 
     """
     Processes uptake into a loading dataframe from specified project and
