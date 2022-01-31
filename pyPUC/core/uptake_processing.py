@@ -9,7 +9,7 @@ import pygaps, os, numbers
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from core.utils import make_path, read_data
+from core.utils import make_path, read_data, define_array
 import datetime
 
 def make_files_samples_df(path):
@@ -51,8 +51,8 @@ def make_files_samples_df(path):
     
     return files_samples   
 
-def clean_isotherms(data, 
-                   positive = True, increasing = True):
+def clean_isotherms(data,
+                   positive=True, increasing=True):
     """
     Removes any bad datapoints from isotherm; automatically removes non-numeric
     and NaN. Options for removing decreasing pressures,
@@ -120,11 +120,10 @@ def clean_isotherms(data,
     
     return data
 
-def make_model_isotherm_dict(path, temperature, 
+def make_model_isotherm_dict(path, temperature, pressure_points,
                              project=None, adsorbate=None, 
                              guess_models=['TSLangmuir', 
                                           'DSLangmuir'],
-                             p_start=0.01, p_stop=20.00, p_step=0.01,
                              cut_data=None,
                              write_csv=False, verbose=False,
                              clean_isos=True): 
@@ -180,6 +179,7 @@ def make_model_isotherm_dict(path, temperature,
     files_samples = make_files_samples_df(path)
     for i in files_samples.index:
         data = read_data(f"{path}{files_samples.file[i]}")
+        data.to_csv(f"{files_samples.file[i]}.csv")
         if clean_isos == True: # remove any bad data
             data = pd.DataFrame(clean_isotherms(data))
         if cut_data is not None:
@@ -216,10 +216,9 @@ def make_model_isotherm_dict(path, temperature,
                                         verbose=verbose
                                         )
         # and generate a point isotherm
-        pressure_points = np.arange(p_start, p_stop, p_step)
         new_pointisotherm = pygaps.PointIsotherm.from_modelisotherm(
             model_iso,
-            pressure_points = pressure_points
+            pressure_points=pressure_points
             ) 
 
         if write_csv == True: # not working, fix later
@@ -289,7 +288,8 @@ def make_report(project, sorptive, temperature, guess_models,
     return report
 
 def process_uptake(project, sorptive, temperature, now,
-                    guess_models, p_start=0.01, p_stop=10.00, p_step=0.01):
+                  guess_models, p_start=0.01, p_stop=10.00, i=0.01,
+                  log=False, base=None):
 
     """
     Processes uptake into a loading dataframe from specified project and
@@ -323,10 +323,10 @@ def process_uptake(project, sorptive, temperature, now,
         loadings of all samples at array of pressures
     """
     path = make_path('source', project, sorptive, 'uptake')
-    data = make_model_isotherm_dict(path, temperature, 
+    pressure_points = define_array(p_start, p_stop, i,
+                                   log=log, base=base)
+    data = make_model_isotherm_dict(path, temperature, pressure_points, 
                                  guess_models, adsorbate=sorptive, 
-                                 p_start=p_start, 
-                                  p_stop=p_stop, p_step=p_step, 
                                  clean_isos=True)
     results_path = f"{make_path('result', project, sorptive)}{now}/"
     
@@ -345,7 +345,7 @@ def process_uptake(project, sorptive, temperature, now,
     loadings.to_csv(f"{results_path}loading_df.csv")
 
     report = make_report(project, sorptive, temperature, guess_models,
-                         p_start, p_stop, p_step)
+                         p_start, p_stop, i)
     report_txt = open(f"{results_path}loading_report.txt", 'w')
     report_txt.write(report)
     report_txt.close()
@@ -376,7 +376,7 @@ def main(project, sorptive, temperature,
 if __name__ == '__main__':
     # for testing
     
-    project = '0010_dualiso_co2'
+    project = '0050_nawaf'
     sorptive = 'co2'
     temperature = 291 
     guess_models = ['DSLangmuir', 'TSLangmuir',]

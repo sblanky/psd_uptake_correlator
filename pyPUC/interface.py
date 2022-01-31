@@ -91,8 +91,8 @@ while input("\nWould you like to create the loading dataframe? [y/n] ") == "y":
                     'GAB', 'Freundlich', 'DR', 'Toth', 
                    ]
     loading_df = process_uptake(project, uptake_sorptive, 298, now,
-                                guess_models,
-                                p_start=p_start, p_stop=p_stop, p_step=p_step)
+                                guess_models, 
+                                p_start=p_start, p_stop=p_stop, i=p_step)
     loading_df.to_csv(f"{results_path}loading_df.csv")
     break
 
@@ -105,7 +105,7 @@ while input("\nWould you like to create the parameter dataframe? [y/n] ") == "y"
     psd_parameter = input("Input S for surface area and V for pore volume: ")
 
     param_df, data_dict = process_psd(project, psd_sorptive, psd_parameter, now,
-                                      wstart=wstart, wstop=wstop, wstep=wstep)
+                                      wstart=wstart, wstop=wstop, i=wstep)
     param_df.to_csv(f"{results_path}param_df.csv")
     break
 

@@ -2,6 +2,8 @@ import sys
 import os
 from pathlib import Path
 import pandas as pd
+import numpy as np
+import math as m
 
 def print_progress_bar(i, maximum, post_text):
     """
@@ -100,4 +102,13 @@ def read_data(path):
         return pd.read_csv(file_path)
     else:
         raise Exception("File not supported")
+
+def define_array(start, stop, i,
+                 log=False, base=10):
+    if log:
+        start = m.log(start, base)
+        stop = m.log(stop, base)
+        return np.logspace(start=start, stop=stop, num=i, base=base)
+    else:
+        return np.arange(start=start, stop=stop, step=i)
 

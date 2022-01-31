@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math as m
 import glob, re, os
-from core.utils import make_path, print_progress_bar, read_data
+from core.utils import make_path, print_progress_bar, read_data, define_array
 import datetime
 now_1 = datetime.datetime.now()
 now = now_1.strftime('%y%m%d%H%M')
@@ -144,10 +144,8 @@ def find_parameter(sample_df, measure,
         parameter = max_value - min_value
         return parameter
     
-def parameter_df(data_dict, 
+def parameter_df(data_dict, w_array,
                  measure='V',
-                 wstart=3, wstop=50, wstep=1,
-                 logstep=False, num=None,
                  to_csv=False, csv_path=None):
     """
     Makes a dataframe of textural parameters from a set of sample PSDs, i.e.
@@ -182,37 +180,21 @@ def parameter_df(data_dict,
         intervals.
 
     """
-    print(f"""Creating parameter DataFrame for for pore width ranges from {wstart} to {wstop}, increment = {wstep} angstroms...""")
+    print(f"""Creating parameter DataFrame...""")
     param_cols = ['wmax', 'wmin']
     for d in data_dict:
         param_cols.append(f"param_{d}")
     param_df = pd.DataFrame(columns = param_cols)
 
-    i = 0
-    if logstep: # logstep part needs work. Only do linear for now.
-        if num is None:
-            print('''
-                  if you set logstep as true, you must also specify
-                  number of points (num) to calculate.
-                  ''')
-        else:
-            base=10
-            wstart = m.log(wstart, base)
-            wstop = m.log(wstop, base)
-            array = np.logspace(wstart, wstop, base=base, num=num)
- 
-    elif logstep is False: # use a linear step
-        if wstep is None:
-            print('No interval (wstep) entered for linear sequence.')
-        else:
-            array = np.arange(wstart, wstop, wstep) 
 
     # real size of array 
-    n = len(array) + 1
+    n = len(w_array) + 1
     # total number of width ranges to be calculated
     t = (np.math.factorial(n) / np.math.factorial(n - 2)) / 2
-    for wmax in array[1:]: 
-        for wmin in np.arange(wstart, wmax, wstep):
+
+    i = 0
+    for wmax in w_array[1:]:  # think about how to do this for logs.
+        for wmin in w_array[w_array<wmax]:
             param_df.loc[i, 'wmax'] = wmax
             param_df.loc[i, 'wmin'] = wmin
             for d in data_dict: # finds parameters between wmin and wmax,
@@ -264,13 +246,15 @@ def make_report(project, sorptives, wstart, wstop, wstep, parameter):
     return report
 
 def process_psd(project, sorptives, parameter, now,
-                wstart=3, wstop=20, wstep=1):
+                wstart=3, wstop=20, i=1,
+                log=False, base=10):
     path = make_path('source', project, sorptives, 'psd')
     data_dict = data_collect(path)
-    param_df = parameter_df(data_dict,
+    w_array = define_array(wstart, wstop, i,
+                           log=log, base=base)
+    param_df = parameter_df(data_dict, w_array,
                             measure=parameter,
-                            wstart=wstart,
-                            wstop=wstop, wstep=wstep)
+                            )
     results_path = f"{make_path('result', project, sorptives, 'psd')}/{now}/"
     if not os.path.exists(results_path):
         os.makedirs(results_path)
@@ -279,7 +263,7 @@ def process_psd(project, sorptives, parameter, now,
     report = make_report(project,
                          sorptives,
                          wstart, wstop,
-                         wstep,
+                         i,
                          parameter) 
     report_txt = open(f"{results_path}psd_report.txt", 'w')
     report_txt.write(report)
