@@ -144,8 +144,7 @@ def find_parameter(sample_df, measure,
         return max_value - min_value
     
 def parameter_df(data_dict, w_array,
-                 measure='V',
-                 to_csv=False, csv_path=None):
+                 measure='V'):
     """
     Makes a dataframe of textural parameters from a set of sample PSDs, i.e.
     determines the pore volume or surface area within every possible interval 
@@ -203,13 +202,6 @@ def parameter_df(data_dict, w_array,
             print_progress_bar(i, t, '')
             i+=1 # Go through all possible values of wmin for wmax
 
-    if to_csv: # saves results to csv if wanted.
-        if csv_path is None:
-            print('No path specified, can\'t save csv')
-        else: 
-            if not os.path.exists(csv_path):
-                os.makedirs(csv_path)
-            param_df.to_csv(f"{csv_path}param_df.csv")
     print("...done") 
     return param_df
 
