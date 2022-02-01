@@ -18,6 +18,10 @@ def print_progress_bar(i, maximum, post_text):
         maximum value reached
     post_text : string
         to display after progress bar
+
+    Returns
+    ------
+    Nothing
     """
     n_bar=20
     j = i/maximum
@@ -26,6 +30,9 @@ def print_progress_bar(i, maximum, post_text):
     sys.stdout.flush()
 
 def get_project_root():
+    """
+    Ensures fixed path for project root, regardless of where code is running.
+    """
     return Path(__file__).parent.parent.parent
 
 def make_path(source_result, project, sorptives=None, application=None):
@@ -105,7 +112,31 @@ def read_data(path):
 
 def define_array(start, stop, i,
                  log=False, base=10):
+    """
+    Defines a linear array for use in psd_processing or uptake_processing.
+    Can be linear or logarithmic.
+
+    Parameters
+    ----------
+    start : float
+        start of array
+    stop : float
+        end of array
+    i : float
+        Increment between points (for linear) or number of points (for
+        logarithmic)
+    log : bool
+        if True, will produce an array in logspace - default is base 10.
+        Default is False.
+    base : int
+        base for logspace array.
+
+    Returns
+    -------
+    array : array
+    """
     if log:
+        # convert stop and start to exponent of base
         start = m.log(start, base)
         stop = m.log(stop, base)
         return np.logspace(start=start, stop=stop, num=i, base=base)

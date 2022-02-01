@@ -154,22 +154,11 @@ def parameter_df(data_dict, w_array,
     ----------
     data_dict : Dictionary
         Dictionary of PSD data for all samples.
-    wstart : num, optional
-        lower bound of pore width, w. The default is 3.
-    wstop : num, optional
-        Upper bound of pore width, w. The default is 50.
-    wstep : num, optional
-        Minimum interval between pore widths. The default is 1.
-    logstep : boolean, optional
-        If true, uses a logarithmic interval. The default is False.
-    num : num, optional
-        Use with logstep, defines number of points between wstart and wstop.
-        The default is None.
-    to_csv : boolean, optional
-        Generates a csv file of the parameter dataframe if true.
-        The default is False.
-    csv_path : string, optional
-        Where to save csv file. The default is None.
+    w_array : array
+        pore widths to use in calculation
+    Measure : string
+        Indicates PSD by volume 'V' or by surfacea area 'S'.
+            Default is 'V'
 
     Returns
     -------
