@@ -54,13 +54,12 @@ def make_correlation_df(loading_df, param_df, data_dict, now,
     return correlation_df, n  
 
 def find_best_width_at_pressure(correlation_df, 
-                                to_csv=True, results_path=None, 
-                                graph=True, show_correlations=False,
                                 drop=False):
     print("Finding best pore width at all pressures.")
     colnames = ['wmin', 'wmax', 'p', 'r_sq', 'm', 'c', 'x', 'y']
     best_width_at_pressure = pd.DataFrame(columns=colnames)
     bwap = best_width_at_pressure
+
     for p in correlation_df.p.unique():
         rows = correlation_df[correlation_df['p']==p].index.tolist()
         best = 0
@@ -86,16 +85,11 @@ def find_best_width_at_pressure(correlation_df,
                            ignore_index=True)
 
     print("...done")
-    if to_csv == True:
-        if not os.path.exists(results_path):
-            os.makedirs(results_path)
-        bwap.to_csv(f"{results_path}best_width_at_pressure.csv")
 
     return bwap
 
 def top_widths_at_pressure(depth, 
                            correlation_df, 
-                           results_path=None, 
                            graph=True, show_correlations=False):
     twap = {}
     for d in range(depth):
