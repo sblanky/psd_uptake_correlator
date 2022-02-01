@@ -126,13 +126,13 @@ def find_parameter(sample_df, measure,
     w_array = w.to_numpy()
     # check if column is empty
     empty_col = np.isnan(w_array[0])
-    if empty_col == True:
+    if empty_col:
         return None
     # otherwise find the parameter
     else:
         # find location of closest value to wmax
         rows_max = np.max(list(np.where(w<wmax)))
-        if wmin <= 3: # prevents zero-sized array
+        if wmin <= min(w_array): # prevents zero-sized array
             rows_min = 0
         else:
             # find location of closest value to wmin
@@ -141,8 +141,7 @@ def find_parameter(sample_df, measure,
         max_value = sample_df.loc[rows_max, measure_column]
         min_value = sample_df.loc[rows_min, measure_column]
         # and return difference
-        parameter = max_value - min_value
-        return parameter
+        return max_value - min_value
     
 def parameter_df(data_dict, w_array,
                  measure='V',
