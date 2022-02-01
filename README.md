@@ -16,7 +16,7 @@ Steps to use
  2. Activate environment inside your cloned repo.
  3. Use pip to install the dev build of pyGAPS. `pip install git+https://github.com/pauliacomi/pyGAPS@develop`[^2]
  4. If you want to use the CLI, simply type `./pyPUC-cli` and press enter. 
- 5. Large calculations (any calculations worth doing!) will require an HPC. Example sbatch script can be found in `./pyPUC/`. Modify to your requirements. Run from root with `sbatch ./pyPUC/sbatch.sh`. 
+ 5. Large calculations (any calculations worth doing!) will probably require an HPC, however calculation time can be significantly reduced by making arrays in logspace. Example sbatch script can be found in `./pyPUC/`. Modify to your requirements. Run from root with `sbatch ./pyPUC/sbatch.sh`. 
 
 [^1]: python 3.8 is required due to compatibility issues with the coolprop backend in pyGAPS.
 [^2]: This is to avoid the problem found [here](https://stackoverflow.com/questions/70248438/module-breaks-when-loaded-into-multiple-scripts). Thanks to [@pauliacomi](https://github.com/pauliacomi) for help with the above.
