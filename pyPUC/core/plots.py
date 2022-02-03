@@ -18,7 +18,19 @@ def bwap(bwap, results_path):
     plt.close(f)
 
 def get_array_from_string(string):
-    string = re.sub(r"\s+", ' ', string)
+    """
+    Converts string of form str([<float> <float>]) to numpy array.
+
+    Parameters
+    ----------
+    string : string
+    
+    Returns
+    -------
+    array : array
+    """
+    string = re.sub(r"\s+", ' ', string) # whitsespace
+    # brackets
     string = string.replace('[', '')
     string = string.replace(']', '')
     array = np.fromstring(string, dtype=float, sep=' ')
@@ -26,6 +38,22 @@ def get_array_from_string(string):
 
 def correlations(df, results_path,
                 convert_string=False):
+    """
+    plots correlations from dataframe (correlation_df, twap, bwap).
+
+    Parameters
+    ----------
+    df : DataFrame
+    results_path : string
+        where to save
+    convert_string : bool
+        Set true if df is read form file. Ensures array can be read.
+        Default is False
+    
+    Returns
+    -------
+    None
+    """
     for index, row in df.iterrows(): 
         f, ax = plt.subplots(nrows=1, ncols=1,
                              figsize=(8, 8), dpi=96)
