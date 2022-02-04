@@ -89,3 +89,30 @@ def correlations(df, results_path,
         f.savefig(f"{path}{name}", dpi=200,
                  bbox_inches='tight')
         plt.close(f)
+
+def vs_correlation(dfs, col, 
+                   results_path, name,
+                   xlabel='',
+                   logx=False, xlim=[3.6, 500], ylim=[0, 0.85], 
+                   legend=None):
+    f, ax = plt.subplots(nrows=1, ncols=1,
+                         figsize=(8, 8), dpi=96)
+    for d in dfs:
+        dat = dfs[d] 
+        # ax.plot(dat.loc[:,col], dat.loc[:,'r_sq'])
+        ax.plot(dat[col], dat['r_sq'])
+    if logx:
+        ax.semilogx()
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("$r^2$")
+    if legend is None:
+        ax.legend(dfs)
+    else:
+        ax.legend(legend)
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    f.savefig(f"{results_path}{name}.png", 
+              bbox_inches='tight')
+

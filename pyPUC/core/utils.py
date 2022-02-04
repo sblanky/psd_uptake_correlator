@@ -143,3 +143,43 @@ def define_array(start, stop, i,
     else:
         return np.arange(start=start, stop=stop, step=i)
 
+def format_num(num):
+    if num <=10:
+        num = format(num, '#.2g')
+    elif num < 100:
+        num = format(num, '.2g')
+    else:
+        num = format(num, '.0f')
+    return num
+
+def split_df(df, col, col_2=None):
+    """
+    Splits a correlation_df according to unique values, e.g. p, wmin or wmax.
+    Useful for monitoring change in correlation with some variable constant.
+
+    Parameters
+    ----------
+    df : DataFrame
+        correlation_df to be read in
+    col : string
+        Which column to split the DataFrame on, e.g. 'p', 'wmin'
+
+    Returns
+    -------
+    dictionary : dictionary
+        Dictionary of dataframes with constant col.
+    """
+    dictionary = {}
+    for c in df[col].unique():
+        df_c = df[df[col]==c]
+        c = format_num(c)
+        dictionary[f"{col}{c}"] = df_c
+        if col_2 is not None:
+            for c_2 in df[col_2].unique():
+                df_c_2 = df_c[df_c[col_2]==c_2]
+                c_2 = format_num(c_2)
+                dictionary[f"{col}{c}_{col_2}{c_2}"] = df_c_2
+        else:
+            dictionary[f"{col}{c}"] = df_c
+    return dictionary
+
