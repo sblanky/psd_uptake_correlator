@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 import os
 import re
+import core.utils
+import core.psd_processing
 """
 Some default plotting tools.
 """
@@ -93,16 +96,18 @@ def correlations(df, results_path,
 def vs_correlation(dfs, col, 
                    results_path, name,
                    xlabel='',
-                   logx=False, xlim=[3.6, 500], ylim=[0, 0.85], 
+                   logx=False, xticks=None,
+                   xlim=[3.6, 500], ylim=[0, 0.85], 
                    legend=None):
     f, ax = plt.subplots(nrows=1, ncols=1,
                          figsize=(8, 8), dpi=96)
     for d in dfs:
         dat = dfs[d] 
-        # ax.plot(dat.loc[:,col], dat.loc[:,'r_sq'])
         ax.plot(dat[col], dat['r_sq'])
     if logx:
         ax.semilogx()
+    if xticks is not None:
+        ax.set_xticks(xticks, labels=[f"{x:.0f}" for x in xticks])
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     ax.set_xlabel(xlabel)
@@ -116,3 +121,61 @@ def vs_correlation(dfs, col,
     f.savefig(f"{results_path}{name}.png", 
               bbox_inches='tight')
 
+
+def psd_fits(project, sorptive,
+             dpi=300):
+    path = core.utils.make_path('source', project,
+                                sorptive, 'psd')
+
+    data_dict = core.psd_processing.data_collect(path)
+
+    fig, axs = plt.subplots(len(data_dict), 3, 
+                            figsize=(12, 2.8 * len(data_dict)), 
+                            dpi=96, sharex='col',
+                            constrained_layout=True)
+
+    for d, key in enumerate(data_dict):
+        dat = data_dict[key]
+        for a in [0, 2]:
+            axs[d, a].semilogx()
+        axs[d, 0].set_xlim(1e-7, 1)
+        max_y = max(dat['AmountAdsorbed'])
+        for a in [0, 1]:
+            axs[d, a].set_ylim(0, max_y)
+        axs[d, 0].set_ylim(0, max_y)
+        axs[d, 1].set_xlim(0, 1)
+        axs[d, 2].set_xlim(min(dat['w']), max(dat['w']))
+        axs[d, 2].set_ylim(0, max(dat['dVdw']) * 1.1)
+        for a in [0, 1, 2]:
+            row = str(d+1)
+            col = chr(a+97)
+            axs[d, a].annotate(f'({col}{row})', 
+                               xy=(0.89, 0.05), xycoords='axes fraction')
+            if a in [0, 1]:
+                axs[d, a].scatter(dat['PP0'], dat['AmountAdsorbed'],
+                                  marker='^',
+                                  color='k',
+                                  fc='none',
+                                  clip_on=False)
+                axs[d, a].plot(dat['PP0'], dat['Fit'],
+                               color='b',
+                               clip_on=False)
+                if a == 0: 
+                    axs[d, a].set_ylabel("$Q\ /\ cm^3\ g^{-1}\ STP$")
+            else:
+                axs[d, a].plot(dat['w'], dat['dVdw'],
+                               color='b',
+                               clip_on=False)
+                axs[d, a].set_ylabel("$PSD\ /\ cm^3\ g^{-1}\ \AA^{-1}$")
+                axs[d, a].yaxis.tick_right()
+                axs[d, a].yaxis.set_label_position('right')
+                axs[d, a].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+                xticks = [3.6, 10, 100]
+                axs[d, a].set_xticks(xticks, labels=[f"{x:.0f}" for x in xticks])
+            if d == len(data_dict) - 1:
+                xlabel = ['$P/P_o$', '$P/P_o$', '$w\ /\ \AA$']
+                axs[d, a].set_xlabel(xlabel[a])
+
+    plt.savefig(f'{path}psd_plots.png',
+                bbox_inches='tight',
+                dpi=dpi)
