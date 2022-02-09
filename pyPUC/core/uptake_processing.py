@@ -120,12 +120,14 @@ def clean_isotherms(data,
     
     return data
 
+
 def make_model_isotherm_dict(path, temperature, pressure_points,
                              project=None, adsorbate=None, 
                              guess_models=['TSLangmuir', 
-                                          'DSLangmuir'],
+                                           'DSLangmuir'],
                              cut_data=None,
-                             write_csv=False, verbose=False,
+                             write_csv=False, results_path=None,
+                             verbose=False,
                              clean_isos=True): 
     """
     Makes a dictionary of point model isotherms from experimental data in path.
@@ -180,7 +182,7 @@ def make_model_isotherm_dict(path, temperature, pressure_points,
     for i in files_samples.index:
         data = read_data(f"{path}{files_samples.file[i]}")
         data.to_csv(f"{files_samples.file[i]}.csv")
-        if clean_isos == True: # remove any bad data
+        if clean_isos:  # remove any bad data
             data = pd.DataFrame(clean_isotherms(data))
         if cut_data is not None:
             if cut_data > 0:
@@ -189,8 +191,8 @@ def make_model_isotherm_dict(path, temperature, pressure_points,
                 print('invalid value for cut_data, please input a pressure')
                 continue
 
-        data['P'] = data['P'].multiply(0.001) # assume data in mbar, convert to bar
-        isotherm = pygaps.PointIsotherm( # reading in data as point isotherm
+        data['P'] = data['P'].multiply(0.001)  # assume data in mbar, convert to bar
+        isotherm = pygaps.PointIsotherm(  # reading in data as point isotherm
             isotherm_data=data,
             pressure_key='P',
             loading_key='Conc.',
@@ -203,9 +205,9 @@ def make_model_isotherm_dict(path, temperature, pressure_points,
             loading_unit='mmol',
             temperature_unit='K',
 
-            material = files_samples.loc[i, 'sample'],
-            adsorbate = adsorbate,
-            temperature = temperature,
+            material=files_samples.loc[i, 'sample'],
+            adsorbate=adsorbate,
+            temperature=temperature,
             )
 
         # then atempt to fit models to point isotherm
@@ -215,22 +217,45 @@ def make_model_isotherm_dict(path, temperature, pressure_points,
                                         model=guess_models,
                                         verbose=verbose
                                         )
+#        model_iso.properties["model_from"] = model_iso.model.name
+#        model_iso.properties["model_rmse"] = model_iso.model.rmse
+
         # and generate a point isotherm
         new_pointisotherm = pygaps.PointIsotherm.from_modelisotherm(
             model_iso,
             pressure_points=pressure_points
             ) 
 
-        if write_csv == True: # not working, fix later
+        pointisotherm_raw = new_pointisotherm.data_raw
+        model_info = pd.DataFrame([[model_iso.model.name,
+                                    model_iso.model.rmse]
+                                   ]
+                                 )
+        isotherm_out = pd.concat([data, 
+                                  pointisotherm_raw,
+                                  model_info
+                                  ], 
+                                 axis=1, 
+                                 ignore_index=True
+                       )
+
+        isotherm_out.columns = ['exp_pressure', 'exp_loading',
+                                'model_pressure', 'model_loading',
+                                'None',
+                                'model', 'rmse'
+                                ]
+
+        if write_csv:  # not working, fix later
             if not os.path.exists(results_path):
                 os.makedirs(results_path)
-            pygaps.isotherm_to_csv(
-                isotherm = new_pointisotherm,
-                path = results_path+isotherm.material+'.csv')
+            isotherm_out.to_csv(
+                f"{results_path}{isotherm.material}.csv"
+            )
 
-        model_isotherm_dict[isotherm.material] = new_pointisotherm.data()
- 
+        model_isotherm_dict[isotherm.material] = isotherm_out
+
     return model_isotherm_dict
+
 
 def loading_df(data_dict):
     loading_df = pd.DataFrame()

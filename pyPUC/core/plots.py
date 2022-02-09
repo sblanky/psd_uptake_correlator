@@ -179,3 +179,52 @@ def psd_fits(project, sorptive,
     plt.savefig(f'{path}psd_plots.png',
                 bbox_inches='tight',
                 dpi=dpi)
+
+
+def uptake_fits(data_dict, results_path,
+                dpi=300):
+    fig, axs = plt.subplots(len(data_dict), 2,
+                            figsize=(8, 1.9 * len(data_dict)),
+                            dpi=96, sharex='col',
+                            constrained_layout=True)
+
+    for d, key in enumerate(data_dict):
+        dat = data_dict[key]
+        dat_1bar = dat[dat.model_pressure <= 1.3]
+        max_loading = max(dat_1bar.model_loading)
+        axs[d, 1].set_xlim(0, 1.25)
+        axs[d, 1].set_ylim(0, max_loading)
+        axs[d, 0].set_xlim(0, 30)
+        for a in [0, 1]:
+            row = str(d+1)
+            col = chr(a+97)
+            axs[d, a].annotate(f'({col}{row})', 
+                               xy=(0.89, 0.05), xycoords='axes fraction')
+            min_p = 0.1
+            if a == 0:
+                max_p = 30
+                model = dat.loc[0, 'model']
+                rmse = format(dat.loc[0, 'rmse'], '.3f')
+                axs[d, a].annotate(f"{model}\nRMSE = {rmse}",
+                                   xy=(0.03, 0.80), xycoords='axes fraction')
+            else:
+                max_p = 1.5
+            for row in dat.index:
+                if not min_p <= dat.loc[row, 'exp_pressure'] <= max_p:
+                    dat.loc[row, 'exp_loading'] = None
+            axs[d, a].scatter(dat.exp_pressure, dat.exp_loading,
+                              marker='D',
+                              color='k',
+                              fc='none',
+                              clip_on=False
+                              )
+            axs[d, a].plot(dat.model_pressure, dat.model_loading,
+                           color='r',
+                           )
+            axs[d, a].set_ylabel("$Q\ /\ mmol\ g^{-1}$")
+            axs[d, a].yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+            if d == len(data_dict) - 1:
+                axs[d, a].set_xlabel("$P\ /\ bar$")
+
+    plt.savefig(f"{results_path}/attempt_01.png",
+                bbox_inches='tight', dpi=dpi)
