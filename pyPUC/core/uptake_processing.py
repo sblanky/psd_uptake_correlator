@@ -260,16 +260,17 @@ def make_model_isotherm_dict(path, temperature, pressure_points,
 def loading_df(data_dict):
     loading_df = pd.DataFrame()
     first = list(data_dict.values())[0]
-    loading_df['pressure'] = first.pressure
-    for d in data_dict: # add loadings for each sample
+    loading_df['pressure'] = first.model_pressure
+    for d in data_dict:  # add loadings for each sample
         colname = 'loading_'+d
-        loading_df[colname] = data_dict[d].loading  
+        loading_df[colname] = data_dict[d].model_loading
     loading_df = loading_df.dropna()
     print("...done")
     return loading_df
-    
+
+
 def make_report(project, sorptive, temperature, guess_models,
-          p_start, p_stop, p_step):
+                p_start, p_stop, p_step):
     """
     Generates a report file for the current analysis.
 

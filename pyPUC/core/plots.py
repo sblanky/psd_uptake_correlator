@@ -8,15 +8,25 @@ import core.psd_processing
 """
 Some default plotting tools.
 """
-def bwap(bwap, results_path):
+
+def bwap(bwap, results_path,
+         xlim=[0, 40], ylim=[3.6, 30],
+         yticks=None,
+         dpi=300):
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,8), dpi=96)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    if yticks is not None:
+        ax.set_yticks(yticks)
     ax.plot(bwap.p, bwap.wmin,
             color='b', label='min')
     ax.plot(bwap.p, bwap.wmax,
             color='b', label='max')  
-    ax.set_xlabel('Pressure / bar')
-    ax.set_ylabel('Pore width / $\AA$')
-    f.savefig(f"{results_path}optimum_pore_size.png", dpi=200,
+    ax.fill_between(bwap.p, bwap.wmin, bwap.wmax,
+                    interpolate=True)
+    ax.set_xlabel('$P\ /\ bar$')
+    ax.set_ylabel('$w\ /\ \AA$')
+    f.savefig(f"{results_path}optimum_pore_size.png", dpi=dpi,
              bbox_inches='tight')
     plt.close(f)
 
@@ -90,20 +100,71 @@ def correlations(df, results_path,
             os.makedirs(path)
         name = f"{format(df.loc[index, 'wmin'], '.1f')}_{format(df.loc[index, 'wmax'], '.1f')}.png"
         f.savefig(f"{path}{name}", dpi=200,
-                 bbox_inches='tight')
+                  bbox_inches='tight')
         plt.close(f)
+
+
+def correlations_grid(df, results_path, name,
+                      convert_string=False, dpi=300):
+
+    f, axs = plt.subplots(nrows=int(len(df)/2), ncols=2,
+                          figsize=(8, 8), dpi=96,
+                          constrained_layout=True)
+    axes = axs.flatten()  # make refering to axs easier
+    for index, row in df.iterrows():
+        x = df.loc[index, 'x']
+        y = df.loc[index, 'y']
+        if convert_string:  # useful if reading from .csv
+            x = get_array_from_string(x)
+            y = get_array_from_string(y)
+
+        axes[index].scatter(x, y,
+                            ec='k', fc='none')
+
+        x_line = np.linspace(min(x), max(x), 100)
+        y_line = df.loc[index, 'm'] * x_line + df.loc[index, 'c']
+        axes[index].plot(x_line, y_line, color='k')
+
+        # set up linear equation and correlation annotation
+        r_sq = format(df.loc[index, 'r_sq'], '.2f')
+        m = core.utils.format_num(df.loc[index, 'm'])
+        c = core.utils.format_num(df.loc[index, 'c'])
+        axes[index].annotate(f"$r^2$ = {r_sq}\nU = {m}V + {c}",
+                             xy=(0.05, 0.85),
+                             xycoords='axes fraction')
+
+        # annotate with sublabel
+        axes[index].annotate(f"({chr(index + 97)})",
+                             xy=(0.9, 0.05),
+                             xycoords='axes fraction')
+
+        axes[index].set_ylabel("$U\ /\ mmol\ g^{-1}$")
+        axes[index].set_xlabel("$V\ /\ cm^3\ g^{-1}$")
+
+    path = f"{results_path}/plots/correlations/"
+    if not os.path.exists(path):
+        os.makedirs(path)
+    f.savefig(f"{path}{name}", dpi=dpi,
+              bbox_inches='tight')
+
 
 def vs_correlation(dfs, col, 
                    results_path, name,
                    xlabel='',
                    logx=False, xticks=None,
                    xlim=[3.6, 500], ylim=[0, 0.85], 
-                   legend=None):
+                   legend=None, labels=None):
     f, ax = plt.subplots(nrows=1, ncols=1,
                          figsize=(8, 8), dpi=96)
-    for d in dfs:
+    for a, d in dfs:
+        if labels is None:
+            labels[a] = None
         dat = dfs[d] 
-        ax.plot(dat[col], dat['r_sq'])
+        ax.plot(dat[col], dat['r_sq'],
+                label=labels[a])
+    if labels is not None:
+        labelLines(plt.gca().get_lines(), zorder=2.5)
+
     if logx:
         ax.semilogx()
     if xticks is not None:
@@ -113,9 +174,11 @@ def vs_correlation(dfs, col,
     ax.set_xlabel(xlabel)
     ax.set_ylabel("$r^2$")
     if legend is None:
-        ax.legend(dfs)
+        ax.legend(dfs, 
+                  frameon=False)
     else:
-        ax.legend(legend)
+        ax.legend(legend,
+                  frameon=False)
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     f.savefig(f"{results_path}{name}.png", 
@@ -123,6 +186,7 @@ def vs_correlation(dfs, col,
 
 
 def psd_fits(project, sorptive,
+             results_path, name,
              dpi=300):
     path = core.utils.make_path('source', project,
                                 sorptive, 'psd')
@@ -176,12 +240,12 @@ def psd_fits(project, sorptive,
                 xlabel = ['$P/P_o$', '$P/P_o$', '$w\ /\ \AA$']
                 axs[d, a].set_xlabel(xlabel[a])
 
-    plt.savefig(f'{path}psd_plots.png',
+    plt.savefig(f'{results_path}{name}.png',
                 bbox_inches='tight',
                 dpi=dpi)
 
 
-def uptake_fits(data_dict, results_path,
+def uptake_fits(data_dict, results_path, name,
                 dpi=300):
     fig, axs = plt.subplots(len(data_dict), 2,
                             figsize=(8, 1.9 * len(data_dict)),
@@ -190,11 +254,11 @@ def uptake_fits(data_dict, results_path,
 
     for d, key in enumerate(data_dict):
         dat = data_dict[key]
-        dat_1bar = dat[dat.model_pressure <= 1.3]
-        max_loading = max(dat_1bar.model_loading)
+        dat_1bar = dat[dat.exp_pressure <= 1.3]
+        max_loading = max(dat_1bar.exp_loading)
         axs[d, 1].set_xlim(0, 1.25)
         axs[d, 1].set_ylim(0, max_loading)
-        axs[d, 0].set_xlim(0, 30)
+        axs[d, 0].set_xlim(0, 40)
         for a in [0, 1]:
             row = str(d+1)
             col = chr(a+97)
@@ -202,10 +266,10 @@ def uptake_fits(data_dict, results_path,
                                xy=(0.89, 0.05), xycoords='axes fraction')
             min_p = 0.1
             if a == 0:
-                max_p = 30
+                max_p = 40
                 model = dat.loc[0, 'model']
                 rmse = format(dat.loc[0, 'rmse'], '.3f')
-                axs[d, a].annotate(f"{model}\nRMSE = {rmse}",
+                axs[d, a].annotate(f"{model}\nRMSE={rmse}",
                                    xy=(0.03, 0.80), xycoords='axes fraction')
             else:
                 max_p = 1.5
@@ -226,5 +290,5 @@ def uptake_fits(data_dict, results_path,
             if d == len(data_dict) - 1:
                 axs[d, a].set_xlabel("$P\ /\ bar$")
 
-    plt.savefig(f"{results_path}/attempt_01.png",
+    plt.savefig(f"{results_path}{name}.png",
                 bbox_inches='tight', dpi=dpi)

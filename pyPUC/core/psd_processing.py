@@ -65,6 +65,7 @@ def make_data_dict(sample_names, path):
     
     return data_dict
 
+
 def data_collect(path):
     """
     Finds sample PSD files in path, and passes to :func:`make_data_dict`
@@ -97,7 +98,8 @@ def data_collect(path):
     print("...done")
     return data_dict
 
-def find_parameter(sample_df, measure, 
+
+def find_parameter(sample_df, measure,
                    wmin=0, wmax=500):
     """
     Finds a textural parameter (pore volume or surface area) for a sample 
@@ -120,7 +122,7 @@ def find_parameter(sample_df, measure,
         Quantity of pore volume or pore width within selected pore width region.
 
     """
-    measure_column = str(f"{measure}cum") # find 'S' or 'V' column in dataframe
+    measure_column = str(f"{measure}cum")  # find 'S' or 'V' column in dataframe
     # find pore width ('w') column in df
     w = sample_df['w']
     w_array = w.to_numpy()
@@ -131,18 +133,19 @@ def find_parameter(sample_df, measure,
     # otherwise find the parameter
     else:
         # find location of closest value to wmax
-        rows_max = np.max(list(np.where(w<wmax)))
+        rows_max = np.max(list(np.where(w < wmax)))
         if wmin <= min(w_array): # prevents zero-sized array
             rows_min = 0
         else:
             # find location of closest value to wmin
-            rows_min = np.max(list(np.where(w<wmin)))
+            rows_min = np.max(list(np.where(w < wmin)))
         # find value of S or V at wmin and wmax
         max_value = sample_df.loc[rows_max, measure_column]
         min_value = sample_df.loc[rows_min, measure_column]
         # and return difference
         return max_value - min_value
-    
+
+
 def parameter_df(data_dict, w_array,
                  measure='V'):
     """
