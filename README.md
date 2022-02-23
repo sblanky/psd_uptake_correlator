@@ -1,4 +1,5 @@
 pyPUC (Python Porosity Uptake Correlator) is an attempt to calculate the optimum pore size range of some type of material for gas uptake at pressures in a range. It is a work in progress but now has some limited CLI functionality. Any serious calculations will likely require use of an HPC. 
+The code is... messy. But it works!
 
 How it works
 ============
