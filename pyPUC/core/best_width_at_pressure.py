@@ -88,15 +88,16 @@ def find_best_width_at_pressure(correlation_df,
 
     return bwap
 
-def top_widths_at_pressure(depth, 
-                           correlation_df, 
-                           graph=True, show_correlations=False):
+"""
+def top_widths_at_pressure(correlation_df,
+                           depth=3)
     twap = {}
     for d in range(depth):
          twap[d] = find_best_width_at_pressure(correlation_df,
-                                          results_path, graph, show_correlations,
-                                          drop=True)
+                                               drop=True)
     return twap
+"""
+
 
 def correlation_requirements(correlation_df, 
                              positive_slope=True,

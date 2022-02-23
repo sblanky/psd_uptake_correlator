@@ -1,15 +1,18 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.lines import Line2D
 import numpy as np
 import os
 import re
 import core.utils
 import core.psd_processing
+from core.labellines import labelLines
 """
 Some default plotting tools.
 """
 
 def bwap(bwap, results_path,
+         name=None,
          xlim=[0, 40], ylim=[3.6, 30],
          yticks=None,
          dpi=300):
@@ -26,8 +29,10 @@ def bwap(bwap, results_path,
                     interpolate=True)
     ax.set_xlabel('$P\ /\ bar$')
     ax.set_ylabel('$w\ /\ \AA$')
-    f.savefig(f"{results_path}optimum_pore_size.png", dpi=dpi,
-             bbox_inches='tight')
+    if name is None:
+        name = bwap
+    f.savefig(f"{results_path}{name}.png", dpi=dpi,
+              bbox_inches='tight')
     plt.close(f)
 
 def get_array_from_string(string):
@@ -42,15 +47,19 @@ def get_array_from_string(string):
     -------
     array : array
     """
-    string = re.sub(r"\s+", ' ', string) # whitsespace
+    string = re.sub(r"\s+", ' ', string)  # whitsespace
     # brackets
     string = string.replace('[', '')
     string = string.replace(']', '')
     array = np.fromstring(string, dtype=float, sep=' ')
     return array
 
+
 def correlations(df, results_path,
-                convert_string=False):
+                 parameter='V',
+                 formatter=None,
+                 convert_string=False,
+                 dpi=300):
     """
     plots correlations from dataframe (correlation_df, twap, bwap).
 
@@ -84,12 +93,16 @@ def correlations(df, results_path,
         y_line = df.loc[index, 'm'] * x_line + df.loc[index, 'c']
         ax.plot(x_line, y_line, color='k')
         r_sq = format(df.loc[index, 'r_sq'], '.2f')
-        m = format(df.loc[index, 'm'], '.2f')
-        c = format(df.loc[index, 'c'], '.2f')
-        ax.annotate(f"$r^2$ = {r_sq}\nU = {m}V + {c}", 
+        if formatter is None:
+            m = format(df.loc[index, 'm'], '.2f')
+            c = format(df.loc[index, 'c'], '.2f')
+        elif formatter == 'scientific':
+            m = format(df.loc[index, 'm'], '.2E')
+            c = format(df.loc[index, 'c'], '.2E')
+        ax.annotate(f"$r^2$ = {r_sq}\nU = {m}{parameter} + {c}",
                     xy=(0.05, 0.9), xycoords='axes fraction')
-        ax.set_ylabel("U / $mmol g^{-1}$")
-        ax.set_xlabel("V / $cm^3 g^{-1}$")
+        ax.set_ylabel("$U\ /\ mmol\ g^{-1}$")
+        ax.set_xlabel("$V\ /\ $cm^3\ g^{-1}$")
         p = df.loc[index, 'p']
         if p >= 10:
             p = format(p, '.2g')
@@ -99,7 +112,7 @@ def correlations(df, results_path,
         if not os.path.exists(path):
             os.makedirs(path)
         name = f"{format(df.loc[index, 'wmin'], '.1f')}_{format(df.loc[index, 'wmax'], '.1f')}.png"
-        f.savefig(f"{path}{name}", dpi=200,
+        f.savefig(f"{path}{name}", dpi=dpi,
                   bbox_inches='tight')
         plt.close(f)
 
@@ -240,12 +253,185 @@ def psd_fits(project, sorptive,
                 xlabel = ['$P/P_o$', '$P/P_o$', '$w\ /\ \AA$']
                 axs[d, a].set_xlabel(xlabel[a])
 
+    axs[0,0].legend(['$N_2$',
+                     'Fit',], frameon=False)
+
+    plt.savefig(f'{results_path}{name}.png',
+                bbox_inches='tight',
+                dpi=dpi)
+
+
+def psd_fits_multi_sorptive(project, sorptives,
+                            results_path, name,
+                            colors=['grey', 'blue', 'red'],
+                            markers=['s', '^', 'o'],
+                            linestyles=['solid', 'dotted', 'dashed'],
+                            dpi=300):
+    path = core.utils.make_path('source', project,
+                                sorptives[0], 'psd')
+    data_dict = core.psd_processing.data_collect(path)
+    fig, axs = plt.subplots(len(data_dict), 3,
+                            figsize=(9, 2 * len(data_dict)),
+                            dpi=96, sharex='col',
+                            constrained_layout=True)
+
+    for s in sorptives:
+        s_index = sorptives.index(s)
+        path = core.utils.make_path('source', project,
+                                    s, 'psd')
+        data_dict = core.psd_processing.data_collect(path)
+        for d, key in enumerate(data_dict):
+            dat = data_dict[key]
+            for a in [0, 1, 2]:
+                row = str(d+1)
+                col = chr(a+97)
+                axs[d, a].annotate(f'({col}{row})',
+                                   xy=(0.85, 0.05), xycoords='axes fraction')
+                if a in [0, 1]:
+                    axs[d, a].scatter(dat['PP0'], dat['AmountAdsorbed'],
+                                      marker=markers[s_index],
+                                      color='k',
+                                      fc='none',
+                                      clip_on=False)
+                    axs[d, a].plot(dat['PP0'], dat['Fit'],
+                                   color=colors[s_index],
+                                   linestyle=linestyles[s_index],
+                                   clip_on=False)
+                    if a == 0:
+                        axs[d, a].set_ylabel("$Q\ /\ cm^3\ g^{-1}\ STP$")
+
+                else:
+                    axs[d, a].plot(dat['w'], dat['dVdw'],
+                                   color=colors[s_index],
+                                   linestyle=linestyles[s_index],
+                                   clip_on=False)
+                    axs[d, a].set_ylabel("$PSD\ /\ cm^3\ g^{-1}\ \AA^{-1}$")
+                    axs[d, a].yaxis.tick_right()
+                    axs[d, a].yaxis.set_label_position('right')
+                    axs[d, a].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+                    xticks = [3, 10, 100]
+                    axs[d, a].set_xticks(xticks, labels=[f"{x:.0f}" for x in xticks])
+                if d == len(data_dict) - 1:
+                    xlabel = ['$P/P_o$', '$P/P_o$', '$w\ /\ \AA$']
+                    axs[d, a].set_xlabel(xlabel[a])
+
+    for d, key in enumerate(data_dict):
+        for a in [0, 2]:
+            axs[d, a].semilogx()
+        axs[d, 0].set_xlim(1e-7, 1)
+        for a in [0, 1]:
+            axs[d, a].set_ylim(0, None)
+        axs[d, 0].set_ylim(0, None)
+        axs[d, 1].set_xlim(0, 1)
+        axs[d, 2].set_xlim(3, None)
+        axs[d, 2].set_ylim(0, None)
+
+    marker_legend = [Line2D([0],[0], marker = 's', label = '$H_2$',
+                            lw=0, markeredgecolor='k', markerfacecolor='none'),
+                     Line2D([0],[0], marker = '^', label= '$N_2$',
+                            lw=0, markeredgecolor='k', markerfacecolor='none'),
+                     Line2D([0],[0], marker = 'o', label= '$O_2$',
+                            lw=0, markeredgecolor='k', markerfacecolor='none'),
+                     ]
+    axs[0,0].legend(handles=marker_legend, frameon=False)
+    axs[0,2].legend(['Fit to $H_2$',
+                     'Fit to $N_2$',
+                     'Fit to $O_2$',], frameon=False)
+
+    plt.savefig(f'{results_path}{name}.png',
+                bbox_inches='tight',
+                dpi=dpi)
+
+
+def psd_fits_dual_sorptive(project, sorptives,
+                           results_path, name,
+                           colors='blue',
+                           markers=['^', 's'],
+                           linestyles='solid',
+                           legend=['$N_2$',
+                                   '$H_2$',
+                                   'dual fit',],
+                           dpi=300):
+    path = core.utils.make_path('source', project,
+                                sorptives, 'psd')
+    data_dict = core.psd_processing.data_collect(path)
+    fig, axs = plt.subplots(len(data_dict), 3,
+                            figsize=(9, 2 * len(data_dict)),
+                            dpi=96, sharex='col',
+                            constrained_layout=True)
+
+    for d, key in enumerate(data_dict):
+        dat = data_dict[key]
+        for a in [0, 1, 2]:
+            row = str(d+1)
+            col = chr(a+97)
+            axs[d, a].annotate(f'({col}{row})',
+                               xy=(0.85, 0.05), xycoords='axes fraction')
+            if a in [0, 1]:
+                axs[d, a].scatter(dat['PP0'], dat['AmountAdsorbed'],
+                                  marker=markers[0],
+                                  color='k',
+                                  fc='none',
+                                  clip_on=False)
+                axs[d, a].scatter(dat['PP0.1'], dat['AmountAdsorbed.1'],
+                                  marker=markers[1],
+                                  color='k',
+                                  fc='none',
+                                  clip_on=False)
+                axs[d, a].plot(dat['PP0'], dat['Fit'],
+                               color=colors,
+                               clip_on=False)
+                axs[d, a].plot(dat['PP0.1'], dat['Fit.1'],
+                               color=colors,
+                               clip_on=False)
+                if a == 0:
+                    axs[d, a].set_ylabel("$Q\ /\ cm^3\ g^{-1}\ STP$")
+
+            else:
+                axs[d, a].plot(dat['w'], dat['dVdw'],
+                               color=colors,
+                               linestyle=linestyles,
+                               clip_on=False)
+                axs[d, a].set_ylabel("$PSD\ /\ cm^3\ g^{-1}\ \AA^{-1}$")
+                axs[d, a].yaxis.tick_right()
+                axs[d, a].yaxis.set_label_position('right')
+                axs[d, a].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+                xticks = [3, 10, 100]
+                axs[d, a].set_xticks(xticks, labels=[f"{x:.0f}" for x in xticks])
+            if d == len(data_dict) - 1:
+                xlabel = ['$P/P_o$', '$P/P_o$', '$w\ /\ \AA$']
+                axs[d, a].set_xlabel(xlabel[a])
+
+    for d, key in enumerate(data_dict):
+        for a in [0, 2]:
+            axs[d, a].semilogx()
+        axs[d, 0].set_xlim(1e-7, 1)
+        for a in [0, 1]:
+            axs[d, a].set_ylim(0, None)
+        axs[d, 0].set_ylim(0, None)
+        axs[d, 1].set_xlim(0, 1)
+        axs[d, 2].set_xlim(3, None)
+        axs[d, 2].set_ylim(0, None)
+
+    """
+    marker_legend = [Line2D([0],[0], marker = 's', label = '$H_2$',
+                            lw=0, markeredgecolor='k', markerfacecolor='none'),
+                     Line2D([0],[0], marker = '^', label= '$N_2$',
+                            lw=0, markeredgecolor='k', markerfacecolor='none'),
+                     Line2D([0],[0], marker = 'o', label= '$O_2$',
+                            lw=0, markeredgecolor='k', markerfacecolor='none'),
+                     ]
+    axs[0,0].legend(handles=marker_legend, frameon=False)
+    """
+    axs[0,0].legend(legend, frameon=False)
+
     plt.savefig(f'{results_path}{name}.png',
                 bbox_inches='tight',
                 dpi=dpi)
 
 
 def uptake_fits(data_dict, results_path, name,
+                xlim0=[0,40], xlim1=[0,1.25],
                 dpi=300):
     fig, axs = plt.subplots(len(data_dict), 2,
                             figsize=(8, 1.9 * len(data_dict)),
@@ -254,11 +440,11 @@ def uptake_fits(data_dict, results_path, name,
 
     for d, key in enumerate(data_dict):
         dat = data_dict[key]
-        dat_1bar = dat[dat.exp_pressure <= 1.3]
+        dat_1bar = dat[dat.exp_pressure <= xlim1[1]] 
         max_loading = max(dat_1bar.exp_loading)
-        axs[d, 1].set_xlim(0, 1.25)
+        axs[d, 1].set_xlim(xlim1)
         axs[d, 1].set_ylim(0, max_loading)
-        axs[d, 0].set_xlim(0, 40)
+        axs[d, 0].set_xlim(xlim0)
         for a in [0, 1]:
             row = str(d+1)
             col = chr(a+97)
@@ -270,9 +456,9 @@ def uptake_fits(data_dict, results_path, name,
                 model = dat.loc[0, 'model']
                 rmse = format(dat.loc[0, 'rmse'], '.3f')
                 axs[d, a].annotate(f"{model}\nRMSE={rmse}",
-                                   xy=(0.03, 0.80), xycoords='axes fraction')
+                                   xy=(0.15, 0.10), xycoords='axes fraction')
             else:
-                max_p = 1.5
+                max_p = 1.25
             for row in dat.index:
                 if not min_p <= dat.loc[row, 'exp_pressure'] <= max_p:
                     dat.loc[row, 'exp_loading'] = None
@@ -283,12 +469,15 @@ def uptake_fits(data_dict, results_path, name,
                               clip_on=False
                               )
             axs[d, a].plot(dat.model_pressure, dat.model_loading,
-                           color='r',
+                           color='tab:brown',
                            )
             axs[d, a].set_ylabel("$Q\ /\ mmol\ g^{-1}$")
             axs[d, a].yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
             if d == len(data_dict) - 1:
                 axs[d, a].set_xlabel("$P\ /\ bar$")
+
+    axs[0,1].legend(['$CO_2$',
+                     'Fit',], frameon=False)
 
     plt.savefig(f"{results_path}{name}.png",
                 bbox_inches='tight', dpi=dpi)

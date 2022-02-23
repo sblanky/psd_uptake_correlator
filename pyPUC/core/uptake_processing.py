@@ -181,7 +181,6 @@ def make_model_isotherm_dict(path, temperature, pressure_points,
     files_samples = make_files_samples_df(path)
     for i in files_samples.index:
         data = read_data(f"{path}{files_samples.file[i]}")
-        data.to_csv(f"{files_samples.file[i]}.csv")
         if clean_isos:  # remove any bad data
             data = pd.DataFrame(clean_isotherms(data))
         if cut_data is not None:
@@ -217,8 +216,6 @@ def make_model_isotherm_dict(path, temperature, pressure_points,
                                         model=guess_models,
                                         verbose=verbose
                                         )
-#        model_iso.properties["model_from"] = model_iso.model.name
-#        model_iso.properties["model_rmse"] = model_iso.model.rmse
 
         # and generate a point isotherm
         new_pointisotherm = pygaps.PointIsotherm.from_modelisotherm(

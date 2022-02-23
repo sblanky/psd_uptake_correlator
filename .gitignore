@@ -10,6 +10,8 @@ conda_list
 pyGAPS/
 bwap_top_testing.py
 tests/
+analysis/
+calc_0061/
 
 # vim temporary files
 [._]*.sw[a-z]
