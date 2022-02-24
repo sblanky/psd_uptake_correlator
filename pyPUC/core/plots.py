@@ -16,14 +16,14 @@ def annotate_axs(axs, xy=(0.1, 0.9)):
         for c in range(len(axs)):
             col = chr(c+97)
             axs[c].annotate(f'({col})',
-                            xy=(0.1, 0.9), xycoords='axes fraction')
+                            xy=xy, xycoords='axes fraction')
     else:
         for c in range(axs.shape[0]):
             for r in range(axs.shape[1]):
                 col = chr(c+97)
                 row = int(r+1)
-                axs.annotate(f'({col}{row})',
-                            xy=(0.1, 0.9), xycoords='axes fraction')
+                axs[c, r].annotate(f'({col}{row})',
+                                   xy=xy, xycoords='axes fraction')
 
 
 
@@ -68,11 +68,7 @@ def bwap_grid(bwaps, results_path,
                           figsize=(9, 2.5*len(bwaps)),
                           dpi=96,
                           constrained_layout=True)
-    if axs.ndim == 1:
-        for c in range(len(axs)):
-            col = chr(c+97)
-            axs[c].annotate(f'({col})',
-                            xy=(0.1, 0.9), xycoords='axes fraction')
+    annotate_axs(axs, xy=(0.05, 0.95))
 
     axes = axs.flatten()
 
@@ -287,6 +283,8 @@ def psd_fits(project, sorptive,
                             dpi=96, sharex='col',
                             constrained_layout=True)
 
+    annotate_axs(axs)
+
     for d, key in enumerate(data_dict):
         dat = data_dict[key]
         for a in [0, 2]:
@@ -300,10 +298,6 @@ def psd_fits(project, sorptive,
         axs[d, 2].set_xlim(min(dat['w']), max(dat['w']))
         axs[d, 2].set_ylim(0, max(dat['dVdw']) * 1.1)
         for a in [0, 1, 2]:
-            row = str(d+1)
-            col = chr(a+97)
-            axs[d, a].annotate(f'({col}{row})', 
-                               xy=(0.89, 0.05), xycoords='axes fraction')
             if a in [0, 1]:
                 axs[d, a].scatter(dat['PP0'], dat['AmountAdsorbed'],
                                   marker='^',
@@ -350,7 +344,8 @@ def psd_fits_multi_sorptive(project, sorptives,
                             figsize=(9, 2 * len(data_dict)),
                             dpi=96, sharex='col',
                             constrained_layout=True)
-
+    annotate_axs(axs, xy=(0.05, 0.95))
+    
     for s in sorptives:
         s_index = sorptives.index(s)
         path = core.utils.make_path('source', project,
@@ -359,10 +354,6 @@ def psd_fits_multi_sorptive(project, sorptives,
         for d, key in enumerate(data_dict):
             dat = data_dict[key]
             for a in [0, 1, 2]:
-                row = str(d+1)
-                col = chr(a+97)
-                axs[d, a].annotate(f'({col}{row})',
-                                   xy=(0.85, 0.05), xycoords='axes fraction')
                 if a in [0, 1]:
                     axs[d, a].scatter(dat['PP0'], dat['AmountAdsorbed'],
                                       marker=markers[s_index],
@@ -435,14 +426,11 @@ def psd_fits_dual_sorptive(project, sorptives,
                             figsize=(9, 2 * len(data_dict)),
                             dpi=96, sharex='col',
                             constrained_layout=True)
+    annotate_axs(axs, xy=(0.85, 0.05))
 
     for d, key in enumerate(data_dict):
         dat = data_dict[key]
         for a in [0, 1, 2]:
-            row = str(d+1)
-            col = chr(a+97)
-            axs[d, a].annotate(f'({col}{row})',
-                               xy=(0.85, 0.05), xycoords='axes fraction')
             if a in [0, 1]:
                 axs[d, a].scatter(dat['PP0'], dat['AmountAdsorbed'],
                                   marker=markers[0],
@@ -503,6 +491,7 @@ def uptake_fits(data_dict, results_path, name,
                             figsize=(8, 1.9 * len(data_dict)),
                             dpi=96, sharex='col',
                             constrained_layout=True)
+    annotate_axs(axs, xy=(0.89, 0.05))
 
     for d, key in enumerate(data_dict):
         dat = data_dict[key]
@@ -512,10 +501,6 @@ def uptake_fits(data_dict, results_path, name,
         axs[d, 1].set_ylim(0, max_loading)
         axs[d, 0].set_xlim(xlim0)
         for a in [0, 1]:
-            row = str(d+1)
-            col = chr(a+97)
-            axs[d, a].annotate(f'({col}{row})', 
-                               xy=(0.89, 0.05), xycoords='axes fraction')
             min_p = 0.1
             if a == 0:
                 max_p = 40
