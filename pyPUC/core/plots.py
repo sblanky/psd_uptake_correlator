@@ -11,6 +11,22 @@ from core.labellines import labelLines
 Some default plotting tools.
 """
 
+def annotate_axs(axs, xy=(0.1, 0.9)):
+    if axs.ndim == 1:
+        for c in range(len(axs)):
+            col = chr(c+97)
+            axs[c].annotate(f'({col})',
+                            xy=(0.1, 0.9), xycoords='axes fraction')
+    else:
+        for c in range(axs.shape[0]):
+            for r in range(axs.shape[1]):
+                col = chr(c+97)
+                row = int(r+1)
+                axs.annotate(f'({col}{row})',
+                            xy=(0.1, 0.9), xycoords='axes fraction')
+
+
+
 def bwap(bwap, results_path,
          name=None,
          xlim=[0, 40], ylim=[3.6, 30],
@@ -34,6 +50,66 @@ def bwap(bwap, results_path,
     f.savefig(f"{results_path}{name}.png", dpi=dpi,
               bbox_inches='tight')
     plt.close(f)
+
+
+def bwap_grid(bwaps, results_path,
+              ncols=None,
+              name=None,
+              xlim=[[0, 40]], ylim=[[3.6, 30]],
+              colors=['tab:purple', 'tab:olive'],
+              yticks=None,
+              dpi=300):
+    if ncols is None:
+        if len(bwaps) == 1:
+            ncols = 1
+        else:
+            ncols = 2
+    f, axs = plt.subplots(nrows=int(len(bwaps)/2), ncols=2,
+                          figsize=(9, 2.5*len(bwaps)),
+                          dpi=96,
+                          constrained_layout=True)
+    if axs.ndim == 1:
+        for c in range(len(axs)):
+            col = chr(c+97)
+            axs[c].annotate(f'({col})',
+                            xy=(0.1, 0.9), xycoords='axes fraction')
+
+    axes = axs.flatten()
+
+    xlim = np.array(xlim)
+    ylim = np.array(ylim)
+
+    for index, b in enumerate(bwaps):
+        if xlim.shape[0] == 1:
+            xlim_index = 0
+        else:
+            xlim_index = index
+        if ylim.shape[0] == 1:
+            ylim_index = 0
+        else:
+            ylim_index = index
+        axes[index].set_xlim(list(xlim[xlim_index]))
+        axes[index].set_ylim(list(ylim[ylim_index]))
+        if yticks is not None:
+            axes[index].set_yticks(yticks)
+        axes[index].plot(bwaps[b].p, bwaps[b].wmin,
+                color=colors[index], label='min')
+        axes[index].plot(bwaps[b].p, bwaps[b].wmax,
+                color=colors[index], label='max')  
+        axes[index].fill_between(bwaps[b].p, bwaps[b].wmin, bwaps[b].wmax,
+                                 color=colors[index], alpha=0.5,
+                                 interpolate=True)
+        axes[index].set_xlabel('$P\ /\ bar$')
+        axes[index].set_ylabel('$w\ /\ \AA$')
+
+    if name is None:
+        name = bwap
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+    f.savefig(f"{results_path}{name}.png", dpi=dpi,
+              bbox_inches='tight')
+    plt.close(f)
+
 
 def get_array_from_string(string):
     """
@@ -413,16 +489,6 @@ def psd_fits_dual_sorptive(project, sorptives,
         axs[d, 2].set_xlim(3, None)
         axs[d, 2].set_ylim(0, None)
 
-    """
-    marker_legend = [Line2D([0],[0], marker = 's', label = '$H_2$',
-                            lw=0, markeredgecolor='k', markerfacecolor='none'),
-                     Line2D([0],[0], marker = '^', label= '$N_2$',
-                            lw=0, markeredgecolor='k', markerfacecolor='none'),
-                     Line2D([0],[0], marker = 'o', label= '$O_2$',
-                            lw=0, markeredgecolor='k', markerfacecolor='none'),
-                     ]
-    axs[0,0].legend(handles=marker_legend, frameon=False)
-    """
     axs[0,0].legend(legend, frameon=False)
 
     plt.savefig(f'{results_path}{name}.png',
