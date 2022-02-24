@@ -9,6 +9,8 @@ pyPUC requires a set of experimentally derived pore size distributions (PSDs), w
   3. Linear regressions are performed between each row of `param_df` and `loading_df`. 
   4. The highest pearson coefficient, r<sup>2</sup> is selected for each pressure, thus yielding the optimum pore size region for each pressure.
 
+In addition there are a number of useful plotting tools in core.plots
+
 Steps to use
 ============
  1. Clone this repo

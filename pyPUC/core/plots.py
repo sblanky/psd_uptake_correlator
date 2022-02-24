@@ -11,7 +11,24 @@ from core.labellines import labelLines
 Some default plotting tools.
 """
 
-def annotate_axs(axs, xy=(0.1, 0.9)):
+def annotate_axs(axs, xy=(0.05, 0.95)):
+    """
+    Annotates axes as (a), (b),... for 1D fig or as
+    (a1), (a2),... (b2),... for 2D fig.
+    Annotation position defaults to top left.
+
+    Parameters
+    ----------
+    axs : np.array
+        axs array to apply annotation to.
+    xy : tuple
+        position of annotation.
+        Defaults to (0.05, 0.95)
+
+    Returns
+    -------
+    nothing
+    """
     if axs.ndim == 1:
         for c in range(len(axs)):
             col = chr(c+97)
