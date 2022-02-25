@@ -82,7 +82,7 @@ def bwap_grid(bwaps, results_path,
         else:
             ncols = 2
     f, axs = plt.subplots(nrows=int(len(bwaps)/2), ncols=2,
-                          figsize=(9, 2.5*len(bwaps)),
+                          figsize=(9, 2.2*len(bwaps)),
                           dpi=96,
                           constrained_layout=True)
     annotate_axs(axs, xy=(0.05, 0.95))
@@ -249,6 +249,78 @@ def correlations_grid(df, results_path, name,
     f.savefig(f"{path}{name}", dpi=dpi,
               bbox_inches='tight')
 
+
+def correlations_VS(data_dict,
+                    results_path, name,
+                    colors=['tab:purple', 'tab:olive'],
+                    markers=['+', 'x'],
+                    convert_string=False, dpi=300):
+
+    f, axs = plt.subplots(nrows=int(len(data_dict['V'])), ncols=2,
+                          figsize=(8, int(len(data_dict['V']))*2.8),
+                          dpi=96,
+                          constrained_layout=True)
+    annotate_axs(axs, xy=(0.9, 0.05))
+    for index, row in data_dict['V'].iterrows():
+        a = 0
+        for d in data_dict:
+            dat = data_dict[d]
+            x = dat.loc[index, 'x']
+            y = dat.loc[index, 'y']
+            if convert_string:  # useful if reading from .csv
+                x = get_array_from_string(x)
+                y = get_array_from_string(y)
+
+            axs[index, a].scatter(x, y,
+                                  ec=colors[a],
+                                  fc='none',
+                                  marker=markers[a])
+
+            x_line = np.linspace(min(x), max(x), 100)
+            y_line = dat.loc[index, 'm'] * x_line + dat.loc[index, 'c']
+            axs[index, a].plot(x_line, y_line,
+                               color=colors[a])
+
+            # set up linear equation and correlation annotation
+            r_sq = format(dat.loc[index, 'r_sq'], '.2f')
+            m = dat.loc[index, 'm']
+            if a == 1:
+                m = m * 1000
+                m = core.utils.format_num(m)
+                m = f"{m}e-3"
+                slope = "$dU/dS$"
+                slope_unit = "$mmol\ m^{-2}$"
+            elif a == 0:
+                slope = "dU/dV"
+                slope_unit = "$mmol\ cm^{-3}\ $"
+                m = core.utils.format_num(m)
+            c = core.utils.format_num(dat.loc[index, 'c'])
+            wmax = core.utils.format_num(dat.loc[index, 'wmax'])
+            wmin = core.utils.format_num(dat.loc[index, 'wmin'])
+            omega = f"$\Omega={wmin}-{wmax}\ \AA$"
+            r_sq = f"$r^2={r_sq}$"
+            slope_text = f"{slope} = {m} {slope_unit}"
+            axs[index, a].annotate(f"{r_sq}\n{slope_text}\n{omega}",
+                                   xy=(0.03, 0.78),
+                                   xycoords='axes fraction')
+
+            if d == 'V':
+                unit = "cm^3\ g^{-1}"
+            elif d == 'S':
+                unit = "m^2\ g^{-1}"
+            xlabel = f"${d}\ /\ {unit}$"
+            if a == 0:
+                axs[index, a].set_ylabel("$U\ /\ mmol\ g^{-1}$")
+            if index == len(dat) -1:
+                axs[index, a].set_xlabel(xlabel)
+
+            a += 1
+
+    path = f"{results_path}/plots/correlations/"
+    if not os.path.exists(path):
+        os.makedirs(path)
+    f.savefig(f"{path}{name}", dpi=dpi,
+              bbox_inches='tight')
 
 def vs_correlation(dfs, col, 
                    results_path, name,
