@@ -146,14 +146,7 @@ def define_array(start, stop, i,
 def format_num(num):
     if num <= 0.01:
         num = format(num, '.2e')
-#        val = format(num, '.2E')
-#        val = val.split('E')
-#        exp = val[1].split('0')[1]
-#        exp = "-" + exp
-#        val = val[0]
-#        num = "{val}x10^{exp}"
-#        num = val + "x10^-^" + f"{exp}"
-    elif num <= 10:
+    elif num < 10:
         num = format(num, '#.2g')
     elif num < 100:
         num = format(num, '.2g')

@@ -85,7 +85,7 @@ def bwap_grid(bwaps, results_path,
                           figsize=(9, 2.2*len(bwaps)),
                           dpi=96,
                           constrained_layout=True)
-    annotate_axs(axs, xy=(0.05, 0.95))
+    annotate_axs(axs, xy=(0.03, 0.94))
 
     axes = axs.flatten()
 
@@ -113,7 +113,9 @@ def bwap_grid(bwaps, results_path,
                                  color=colors[index], alpha=0.5,
                                  interpolate=True)
         axes[index].set_xlabel('$P\ /\ bar$')
-        axes[index].set_ylabel('$w\ /\ \AA$')
+
+    axes[0].set_ylabel('$\Omega_V\ /\ \AA$')
+    axes[1].set_ylabel('$\Omega_S\ /\ \AA$')
 
     if name is None:
         name = bwap
@@ -288,10 +290,10 @@ def correlations_VS(data_dict,
                 m = m * 1000
                 m = core.utils.format_num(m)
                 m = f"{m}e-3"
-                slope = "$dU/dS$"
+                slope = "$\\frac{dU}{dS_{\Omega}}$"
                 slope_unit = "$mmol\ m^{-2}$"
             elif a == 0:
-                slope = "dU/dV"
+                slope = "$\\frac{dU}{dV_{\Omega}}$"
                 slope_unit = "$mmol\ cm^{-3}\ $"
                 m = core.utils.format_num(m)
             c = core.utils.format_num(dat.loc[index, 'c'])
@@ -301,13 +303,14 @@ def correlations_VS(data_dict,
             r_sq = f"$r^2={r_sq}$"
             slope_text = f"{slope} = {m} {slope_unit}"
             axs[index, a].annotate(f"{r_sq}\n{slope_text}\n{omega}",
-                                   xy=(0.03, 0.78),
+                                   xy=(0.03, 0.75),
                                    xycoords='axes fraction')
 
             if d == 'V':
                 unit = "cm^3\ g^{-1}"
             elif d == 'S':
                 unit = "m^2\ g^{-1}"
+            d = d + "_{\Omega}"
             xlabel = f"${d}\ /\ {unit}$"
             if a == 0:
                 axs[index, a].set_ylabel("$U\ /\ mmol\ g^{-1}$")
