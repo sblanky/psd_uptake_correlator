@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from matplotlib.ticker import FormatStrFormatter
 from matplotlib.lines import Line2D
 import numpy as np
@@ -70,29 +71,56 @@ def bwap(bwap, results_path,
 
 
 def bwap_grid(bwaps, results_path,
+              figsize=(8, 8),
+              plot_rsq=False,
+              rsq_sym=['^', '^', 
+                       'o', 'o',
+                       's', 's'],
+              rsq_col=['blue', 'blue',
+                       'red', 'red',
+                       'grey', 'grey'],
+              annotations=None,
               ncols=None,
               name=None,
               xlim=[[0, 40]], ylim=[[3.6, 30]],
+              xticks=[0.1, 1, 10, 20],
               colors=['tab:purple', 'tab:olive'],
               yticks=None,
               dpi=300):
+
     if ncols is None:
         if len(bwaps) == 1:
             ncols = 1
         else:
             ncols = 2
-    f, axs = plt.subplots(nrows=int(len(bwaps)/2), ncols=2,
-                          figsize=(9, 2.2*len(bwaps)),
+    if ncols == 1:
+        nrows = int(len(bwaps))
+    else:
+        nrows = int(len(bwaps) / 2)
+    if plot_rsq:
+        nrows+=1
+    f, axs = plt.subplots(nrows=nrows, ncols=ncols,
+                          figsize=figsize,
                           dpi=96,
                           constrained_layout=True)
-    annotate_axs(axs, xy=(0.03, 0.94))
 
     axes = axs.flatten()
+
+    if annotations is None:
+        annotate_axs(axs, xy=(0.02, 0.94))
+    else:
+        for i, a in enumerate(axes):
+            a.annotate(annotations[i],
+                       xy=(0.02, 0.92), xycoords='axes fraction')
 
     xlim = np.array(xlim)
     ylim = np.array(ylim)
 
     for index, b in enumerate(bwaps):
+        if ncols==1:
+            ax = axs[index]
+        else:
+            ax = axes[index]
         if xlim.shape[0] == 1:
             xlim_index = 0
         else:
@@ -101,24 +129,71 @@ def bwap_grid(bwaps, results_path,
             ylim_index = 0
         else:
             ylim_index = index
-        axes[index].set_xlim(list(xlim[xlim_index]))
-        axes[index].set_ylim(list(ylim[ylim_index]))
+        ax.set_xlim(list(xlim[xlim_index]))
+        ax.set_ylim(list(ylim[ylim_index]))
+        ax.semilogx()
         if yticks is not None:
-            axes[index].set_yticks(yticks)
-        axes[index].plot(bwaps[b].p, bwaps[b].wmin,
+            ax.set_yticks(yticks)
+        ax.plot(bwaps[b].p, bwaps[b].wmin,
                 color=colors[index], label='min')
-        axes[index].plot(bwaps[b].p, bwaps[b].wmax,
+        ax.plot(bwaps[b].p, bwaps[b].wmax,
                 color=colors[index], label='max')  
-        axes[index].fill_between(bwaps[b].p, bwaps[b].wmin, bwaps[b].wmax,
+        ax.fill_between(bwaps[b].p, bwaps[b].wmin, bwaps[b].wmax,
                                  color=colors[index], alpha=0.5,
                                  interpolate=True)
-        axes[index].set_xlabel('$P\ /\ bar$')
+        if xticks is not None:
+            ax.set_xticks(xticks, labels=[f"{core.utils.format_num(x)}" for x in xticks])
 
-    axes[0].set_ylabel('$\Omega_V\ /\ \AA$')
-    axes[1].set_ylabel('$\Omega_S\ /\ \AA$')
+        if plot_rsq:
+            if ncols==1:
+                axs[nrows-1].scatter(bwaps[b].p, bwaps[b].r_sq,
+                                    ec=rsq_col[index], fc='none',
+                                    marker=rsq_sym[index],
+                                    clip_on=False)
+            else:
+                if index % 2 == 0:
+                    c = 0
+                else:
+                    c = 1
+                axs[nrows-1, c].scatter(bwaps[b].p, bwaps[b].r_sq,
+                                        ec=rsq_col[index], fc='none',
+                                        marker=rsq_sym[index],
+                                        clip_on=False)
 
+    for row in range(nrows):
+        if ncols == 1:
+            axs[row].set_ylabel('$\Omega_V\ \\rm{/\ \AA}$')
+        else:
+            axs[row, 0].set_ylabel('$\Omega_V\ \\rm{/\ \AA}$')
+            axs[row, 1].set_ylabel('$\Omega_S\ \\rm{/\ \AA}$')
+
+    if ncols==1:
+        ax = axs[nrows-1]
+        ax.set_xlabel('$P\ \\rm{/\ bar}$')
+        if plot_rsq:
+            ax.set_ylabel('$r^2$')
+            ax.semilogx()
+            ax.set_xlim(xlim[0])
+            ax.set_xticks(xticks, labels=[f"{core.utils.format_num(x)}" for x in xticks])
+            ax.legend(['$N_2$',
+                       '$O_2$',
+                       '$H_2$',], frameon=False)
+
+    else:
+        for col in range(ncols):
+            axs[nrows-1, col].set_xlabel('$P\ \\rm{/\ bar}$')
+            if plot_rsq:
+                axs[nrows-1, col].set_ylabel('$r^2$')
+                axs[nrows-1, col].semilogx()
+                axs[nrows-1, col].set_xlim(xlim[0])
+                axs[nrows-1, col].set_xticks(xticks, labels=[f"{core.utils.format_num(x)}" for x in xticks])
+
+        if plot_rsq:
+            axs[nrows-1, 1].legend(['$N_2$',
+                                    '$O_2$',
+                                    '$H_2$',], frameon=False)
     if name is None:
-        name = bwap
+        name = 'bwap'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     f.savefig(f"{results_path}{name}.png", dpi=dpi,
@@ -289,31 +364,31 @@ def correlations_VS(data_dict,
             if a == 1:
                 m = m * 1000
                 m = core.utils.format_num(m)
-                m = f"{m}e-3"
-                slope = "$\\frac{dU}{dS_{\Omega}}$"
-                slope_unit = "$mmol\ m^{-2}$"
+#                m = f"{m}e-3"
+                slope = "$\\dfrac{\\rm{d}\\it{U}}{\\rm{d}\\it{S_{\Omega}}}$"
+                slope_unit = "$\\rm{\\mu mol\ m^{-2}}$"
             elif a == 0:
-                slope = "$\\frac{dU}{dV_{\Omega}}$"
-                slope_unit = "$mmol\ cm^{-3}\ $"
+                slope = "$\\dfrac{\\rm{d}\\it{U}}{\\rm{d}\\it{V_{\Omega}}}$"
+                slope_unit = "$\\rm{mmol\ cm^{-3}}$"
                 m = core.utils.format_num(m)
             c = core.utils.format_num(dat.loc[index, 'c'])
             wmax = core.utils.format_num(dat.loc[index, 'wmax'])
             wmin = core.utils.format_num(dat.loc[index, 'wmin'])
-            omega = f"$\Omega={wmin}-{wmax}\ \AA$"
+            omega = f"$\Omega={wmin}-{wmax}$" + "$\\rm{\ \AA}$"
             r_sq = f"$r^2={r_sq}$"
             slope_text = f"{slope} = {m} {slope_unit}"
             axs[index, a].annotate(f"{r_sq}\n{slope_text}\n{omega}",
-                                   xy=(0.03, 0.75),
+                                   xy=(0.03, 0.7),
                                    xycoords='axes fraction')
 
             if d == 'V':
-                unit = "cm^3\ g^{-1}"
+                unit = "\\rm{cm^3\ g^{-1}}"
             elif d == 'S':
-                unit = "m^2\ g^{-1}"
+                unit = "\\rm{m^2\ g^{-1}}"
             d = d + "_{\Omega}"
             xlabel = f"${d}\ /\ {unit}$"
             if a == 0:
-                axs[index, a].set_ylabel("$U\ /\ mmol\ g^{-1}$")
+                axs[index, a].set_ylabel("$U\ \\rm{/\ mmol\ g^{-1}}$")
             if index == len(dat) -1:
                 axs[index, a].set_xlabel(xlabel)
 
@@ -624,3 +699,37 @@ def uptake_fits(data_dict, results_path, name,
 
     plt.savefig(f"{results_path}{name}.png",
                 bbox_inches='tight', dpi=dpi)
+
+
+def get_colors(cmap, n):
+    array = np.arange(0, n, 1) / np.linalg.norm(np.arange(0, n, 1))
+    colors = []
+    for a in array:
+        colors.append(cmap(a))
+    return colors
+
+
+def regions_corr(ax, data_dict,
+                 colors=None,
+                 labels=None, xvals=None,
+                 verbose=False):
+    if verbose:
+        print(f"---------\n{ax}")
+    if colors == None:
+        colors = get_colors(cmap.get_cmap('copper'),
+                            len(data_dict))
+    if labels == None:
+        labels = np.arange(1, len(data_dict), 1)
+
+    for d in data_dict:
+        dat = data_dict[d]
+        i = data_dict.index(d)
+        axs[0].plot(dat.p, dat.r_sq,
+                    label=labels[i],
+                    color=colors[i])
+        if verbose:
+            print(d)
+            print(max(dat.r_sq))
+            print(dat.loc[dat.index[dat.r_sq==max(dat.r_sq)], 'p'])
+
+    labelLines(ax.get_lines(), zorder=2.5, xvals=xvals)
